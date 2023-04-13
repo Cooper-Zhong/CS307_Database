@@ -1,3 +1,4 @@
+import java.sql.Timestamp;
 import java.util.List;
 
 public class Post {
@@ -8,8 +9,8 @@ public class Post {
     private String postingTime;
     private String postingCity;
     private String authorName;
-    private String authorRegistrationTime;
-    private String authorID;
+    private Timestamp authorRegistrationTime;
+    private String authorID;//author id card number
     private String authorPhone;
     private List<String> authorsFollowedBy;
     private List<String> authorFavorite;
@@ -92,11 +93,11 @@ public class Post {
         this.authorName = authorName;
     }
 
-    public String getAuthorRegistrationTime() {
+    public Timestamp getAuthorRegistrationTime() {
         return authorRegistrationTime;
     }
 
-    public void setAuthorRegistrationTime(String authorRegistrationTime) {
+    public void setAuthorRegistrationTime(Timestamp authorRegistrationTime) {
         this.authorRegistrationTime = authorRegistrationTime;
     }
 

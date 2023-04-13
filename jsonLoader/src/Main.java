@@ -10,8 +10,13 @@ import java.util.List;
 import java.util.Properties;
 
 public class Main {
+    private static final int BATCH_SIZE = 2000;
     private static Connection con = null;
-    private static PreparedStatement stmt = null;
+    private static PreparedStatement stmt = null;//global statement for all inserts
+    private static PreparedStatement stmt1 = null;// for authors followed by
+    private static PreparedStatement stmt2 = null;// for authors favorite
+    private static PreparedStatement stmt3 = null;// for authors shared
+    private static PreparedStatement stmt4 = null;// for authors liked
     static List<Post> posts;
     static List<Replies> replies;
 
@@ -25,26 +30,29 @@ public class Main {
         closeDB();
 
         int cnt = 0;
-
         long start = System.currentTimeMillis();
         openDB(prop);
-        setPrepareStatement();
+//        setPrepareStatement();
+
+        prepareAuthors();// insert statement for authors
+        prepareFollowed();// insert statement for authors followed by
         for (Post post : posts) {
             //here post is an object with all the attributes.
-            loadPost(post);
+            loadAuthor(post);
             cnt++;
-            if (cnt % 1000 == 0) {
-                System.out.println("insert " + 1000 + " data successfully!");
-            }
+//            if (cnt % 1000 == 0) {
+//                System.out.println("insert " + 1000 + " data successfully!");
+//            }
         }
-        for (Replies reply : replies) {
-            //here reply is an object with all the attributes.
-            loadReply(reply);
-            cnt++;
-            if (cnt % 1000 == 0) {
-                System.out.println("insert " + 1000 + " data successfully!");
-            }
-        }
+
+//        for (Replies reply : replies) {
+//            //here reply is an object with all the attributes.
+//            loadReply(reply);
+//            cnt++;
+//            if (cnt % 1000 == 0) {
+//                System.out.println("insert " + 1000 + " data successfully!");
+//            }
+//        }
 
         try {
             con.commit();
@@ -138,6 +146,34 @@ public class Main {
         }
     }
 
+    public static void prepareAuthors() {// authors in one post json
+        try {
+            stmt = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time, author_phone,author_id_card) " +
+                    "VALUES (?,?,?,?);");
+            //the first serial number is not included in the insert statement.
+        } catch (SQLException e) {
+            System.err.println("Insert statement failed");
+            System.err.println(e.getMessage());
+            closeDB();
+            System.exit(1);
+        }
+    }
+
+    public static void prepareFollowed() {
+        try {
+            //only have authorName
+            stmt1 = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time) " +
+                    "VALUES (?,?);");
+            //the first serial number is not included in the insert statement.
+            // phone and id card are null
+        } catch (SQLException e) {
+            System.err.println("Insert statement failed");
+            System.err.println(e.getMessage());
+            closeDB();
+            System.exit(1);
+        }
+    }
+
     /**
      * clear data in table before import each time, to compare the speed of different import methods.
      */
@@ -146,20 +182,14 @@ public class Main {
         if (con != null) {
             try {//rewrite later
                 stmt0 = con.createStatement();
-                stmt0.executeUpdate("drop table movies;");
+                stmt0.executeUpdate("drop table authors cascade;");
                 con.commit();
-                stmt0.executeUpdate("create table if not exists movies(\n" +
-                        "movieid serial not null\n" +
-                        "constraint movies_pkey\n" +
-                        "primary key,\n" +
-                        "title varchar(200) not null,\n" +
-                        "country char(2) not null\n" +
-                        "constraint movies_country_fkey\n" +
-                        "references countries,\n" +
-                        "year_released integer not null,\n" +
-                        "runtime integer,\n" +
-                        "constraint movies_title_country_year_released_key\n" +
-                        "unique (title, country, year_released)\n" +
+                stmt0.executeUpdate("create table if not exists authors(\n" +
+                        "author_id SERIAL primary key\n," +
+                        "author_name              text not null," +
+                        "author_registration_time TIMESTAMP," +
+                        "author_phone             text," +
+                        "author_id_card           text" +
                         ");");
                 con.commit();
                 stmt0.close();
@@ -174,7 +204,7 @@ public class Main {
      *
      * @param post
      */
-    private static void loadPost(Post post) {
+    private static void loadAuthor(Post post) {
         //access info through getter method.
         int postID = post.getPostID();
         String title = post.getTitle();
@@ -183,8 +213,8 @@ public class Main {
         String postingTime = post.getPostingTime();
         String postingCity = post.getPostingCity();
         String authorName = post.getAuthorName();
-        String authorRegistrationTime = post.getAuthorRegistrationTime();
-        String authorID = post.getAuthorID();
+        Timestamp authorRegistrationTime = post.getAuthorRegistrationTime();
+        String authorID = post.getAuthorID();//id card number
         String authorPhone = post.getAuthorPhone();
         List<String> authorsFollowedBy = post.getAuthorsFollowedBy();
         List<String> authorFavorite = post.getAuthorFavorite();
@@ -194,12 +224,23 @@ public class Main {
         if (con != null) {
             try {
                 //pass in attributes
-//                stmt.setInt(1, Integer.parseInt(lineData[0]));
-//                stmt.setString(2, lineData[1]);
-//                stmt.setString(3, lineData[2]);
-//                stmt.setInt(4, Integer.parseInt(lineData[3]));
-//                stmt.setInt(5, Integer.parseInt(lineData[4]));
+                stmt.setString(1, authorName);
+                stmt.setTimestamp(2, authorRegistrationTime);
+                stmt.setString(3, authorPhone);
+                stmt.setString(4, authorID);
                 stmt.executeUpdate();
+
+                //authors in followed list
+                for (String followedAuthor : authorsFollowedBy) {
+                    Timestamp ts = new Timestamp(System.currentTimeMillis());
+                    stmt1.setString(1, followedAuthor);
+                    stmt1.setTimestamp(2, ts);
+                    stmt1.executeUpdate();
+                }
+
+
+
+//                stmt.addBatch();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
