@@ -32,10 +32,8 @@ public class Main {
         int cnt = 0;
         long start = System.currentTimeMillis();
         openDB(prop);
-//        setPrepareStatement();
 
-        prepareAuthors();// insert statement for authors
-        prepareFollowed();// insert statement for authors followed by
+        prepareStatement();
         for (Post post : posts) {
             //here post is an object with all the attributes.
             loadAuthor(post);
@@ -134,23 +132,30 @@ public class Main {
     /**
      * rewrite the insert statement later!
      */
-    public static void setPrepareStatement() {
-        try {
-            stmt = con.prepareStatement("INSERT INTO public.movies (movieid, title, country, year_released, runtime) " +
-                    "VALUES (?,?,?,?,?);");
-        } catch (SQLException e) {
-            System.err.println("Insert statement failed");
-            System.err.println(e.getMessage());
-            closeDB();
-            System.exit(1);
-        }
-    }
 
-    public static void prepareAuthors() {// authors in one post json
+    public static void prepareStatement() {// authors in one post json
         try {
             stmt = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time, author_phone,author_id_card) " +
-                    "VALUES (?,?,?,?);");
+                    "VALUES (?,?,?,?) on conflict(author_name) do nothing;");
             //the first serial number is not included in the insert statement.
+            //if duplicate, do nothing
+
+            stmt1 = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time) " +
+                    "VALUES (?,?) on conflict(author_name) do nothing;");
+            //the first serial number is not included in the insert statement.
+            // phone and id card are null,registration time is randomly generated
+
+            stmt2 = con.prepareStatement("insert into public.posts (post_id,title,content,post_time,post_city,post_author_id)" +
+                    "values (?,?,?,?,?,(select authors.author_id from authors where author_name = ?)) on conflict(post_id) do nothing;");
+
+            stmt3 = con.prepareStatement("insert into public.categories(category_name)" +
+                    " values (?) on conflict(category_name) do nothing;");
+
+            stmt4 = con.prepareStatement("insert into public.post_category(post_id,category_id)" +
+                    " values (?,(select categories.category_id from categories where category_name = ?)) " +
+                    "on conflict(post_id,category_id) do nothing;");
+
+
         } catch (SQLException e) {
             System.err.println("Insert statement failed");
             System.err.println(e.getMessage());
@@ -159,20 +164,6 @@ public class Main {
         }
     }
 
-    public static void prepareFollowed() {
-        try {
-            //only have authorName
-            stmt1 = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time) " +
-                    "VALUES (?,?);");
-            //the first serial number is not included in the insert statement.
-            // phone and id card are null
-        } catch (SQLException e) {
-            System.err.println("Insert statement failed");
-            System.err.println(e.getMessage());
-            closeDB();
-            System.exit(1);
-        }
-    }
 
     /**
      * clear data in table before import each time, to compare the speed of different import methods.
@@ -182,16 +173,51 @@ public class Main {
         if (con != null) {
             try {//rewrite later
                 stmt0 = con.createStatement();
+                //authors
                 stmt0.executeUpdate("drop table authors cascade;");
                 con.commit();
                 stmt0.executeUpdate("create table if not exists authors(\n" +
                         "author_id SERIAL primary key\n," +
-                        "author_name              text not null," +
+                        "author_name              text not null unique," +
                         "author_registration_time TIMESTAMP," +
                         "author_phone             text," +
                         "author_id_card           text" +
                         ");");
                 con.commit();
+
+                //posts
+                stmt0.executeUpdate("drop table posts cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists posts(\n" +
+                        "post_id SERIAL primary key," +
+                        "title              text not null," +
+                        "content            text not null," +
+                        "post_time               TIMESTAMP," +
+                        "post_city               text," +
+                        "post_author_id INTEGER references authors (author_id) not null" +
+                        ");");
+                con.commit();
+                // categories
+                stmt0.executeUpdate("drop table categories cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists categories(\n" +
+                        "category_id SERIAL primary key," +
+                        "category_name              text not null unique" +
+                        ");");
+                con.commit();
+
+                //post_category (relation table)
+                stmt0.executeUpdate("drop table post_category cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists post_category(\n" +
+                        "post_id INTEGER references posts (post_id) not null," +
+                        "category_id INTEGER references categories (category_id) not null," +
+                        "primary key (post_id,category_id)" +
+                        ");");
+                con.commit();
+
+
+
                 stmt0.close();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
@@ -224,6 +250,7 @@ public class Main {
         if (con != null) {
             try {
                 //pass in attributes
+                //post authors
                 stmt.setString(1, authorName);
                 stmt.setTimestamp(2, authorRegistrationTime);
                 stmt.setString(3, authorPhone);
@@ -237,7 +264,49 @@ public class Main {
                     stmt1.setTimestamp(2, ts);
                     stmt1.executeUpdate();
                 }
+                //authors in favorite list
+                for (String favoriteAuthor : authorFavorite) {
+                    Timestamp ts = new Timestamp(System.currentTimeMillis());
+                    stmt1.setString(1, favoriteAuthor);
+                    stmt1.setTimestamp(2, ts);
+                    stmt1.executeUpdate();
+                }
+                //authors in shared list
+                for (String sharedAuthor : authorShared) {
+                    Timestamp ts = new Timestamp(System.currentTimeMillis());
+                    stmt1.setString(1, sharedAuthor);
+                    stmt1.setTimestamp(2, ts);
+                    stmt1.executeUpdate();
+                }
+                //authors in liked list
+                for (String likedAuthor : authorLiked) {
+                    Timestamp ts = new Timestamp(System.currentTimeMillis());
+                    stmt1.setString(1, likedAuthor);
+                    stmt1.setTimestamp(2, ts);
+                    stmt1.executeUpdate();
+                }
 
+                //load post info
+                stmt2.setInt(1, postID);
+                stmt2.setString(2, title);
+                stmt2.setString(3, content);
+                stmt2.setTimestamp(4, Timestamp.valueOf(postingTime));
+                stmt2.setString(5, postingCity);
+                stmt2.setString(6, authorName);
+                stmt2.executeUpdate();
+
+                //load category info
+                for (String category1 : category) {
+                    stmt3.setString(1, category1);
+                    stmt3.executeUpdate();
+                }
+
+//                load post_category relation table
+                for (String category1 : category) {
+                    stmt4.setInt(1, postID);
+                    stmt4.setString(2, category1);
+                    stmt4.executeUpdate();
+                }
 
 
 //                stmt.addBatch();
