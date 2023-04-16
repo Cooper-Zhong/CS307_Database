@@ -12,15 +12,18 @@ import java.util.Properties;
 public class Main {
     private static final int BATCH_SIZE = 2000;
     private static Connection con = null;
-    private static PreparedStatement stmt = null;//for authors of one post
-    private static PreparedStatement stmt1 = null;// for authors followed by
-    private static PreparedStatement stmt2 = null;// for authors favorite
-    private static PreparedStatement stmt3 = null;// for authors shared
-    private static PreparedStatement stmt4 = null;// for authors liked
-    private static PreparedStatement stmt5 = null;// for authors commented
-    private static PreparedStatement stmt6 = null;// for authors replied
-    private static PreparedStatement stmt7 = null;// for authors followed by
-    private static PreparedStatement stmt8 = null;// for authors favorite
+    private static PreparedStatement stmt = null;
+    private static PreparedStatement stmt1 = null;
+    private static PreparedStatement stmt2 = null;
+    private static PreparedStatement stmt3 = null;
+    private static PreparedStatement stmt4 = null;
+    private static PreparedStatement stmt5 = null;
+    private static PreparedStatement stmt6 = null;
+    private static PreparedStatement stmt7 = null;
+    private static PreparedStatement stmt8 = null;
+    private static PreparedStatement stmt9 = null;
+    private static PreparedStatement stmt10 = null;
+    private static PreparedStatement stmt11 = null;
     static List<Post> posts;
     static List<Replies> replies;
 
@@ -33,7 +36,8 @@ public class Main {
         clearDataInTable();
         closeDB();
 
-        int cnt = 0;
+        int cnt1 = 0;
+        int cnt2 = 0;
         long start = System.currentTimeMillis();
         openDB(prop);
 
@@ -41,20 +45,20 @@ public class Main {
         for (Post post : posts) {
             //here post is an object with all the attributes.
             loadPost(post);
-            cnt++;
+            cnt1++;
 //            if (cnt % 1000 == 0) {
 //                System.out.println("insert " + 1000 + " data successfully!");
 //            }
         }
 
-//        for (Replies reply : replies) {
-//            //here reply is an object with all the attributes.
-//            loadReply(reply);
-//            cnt++;
-//            if (cnt % 1000 == 0) {
+        for (Replies reply : replies) {
+            //here reply is an object with all the attributes.
+            loadReply(reply);
+            cnt2++;
+//            if (cnt2 % 1000 == 0) {
 //                System.out.println("insert " + 1000 + " data successfully!");
 //            }
-//        }
+        }
 
         try {
             con.commit();
@@ -63,8 +67,8 @@ public class Main {
         }
         closeDB();
         long end = System.currentTimeMillis();
-        System.out.println(cnt + " records successfully loaded");
-        System.out.println("Loading speed : " + (cnt * 1000L) / (end - start) + " records/s");
+        System.out.println(cnt1 + cnt2 + " records successfully loaded");
+        System.out.println("Loading speed : " + ((cnt1 + cnt2) * 1000L) / (end - start) + " records/s");
     }
 
 
@@ -133,10 +137,6 @@ public class Main {
     }
 
 
-    /**
-     * rewrite the insert statement later!
-     */
-
     public static void prepareStatement() {// authors in one post json
         try {
             stmt = con.prepareStatement("INSERT INTO public.authors (author_name, author_registration_time, author_phone,author_id_card) " +
@@ -148,9 +148,6 @@ public class Main {
                     "VALUES (?,?) on conflict(author_name) do nothing;");
             //the first serial number is not included in the insert statement.
             // phone and id card are null,registration time is randomly generated
-
-//            stmt2 = con.prepareStatement("insert into public.posts (post_id,title,content,post_time,post_city,post_author_id)" +
-//                    "values (?,?,?,?,?,(select authors.author_id from authors where author_name = ?)) on conflict(post_id) do nothing;");
 
             stmt2 = con.prepareStatement("insert into public.posts(post_id,title,content,post_time,post_city, author_name)" +
                     " values (?,?,?,?,?,?) on conflict(post_id) do nothing;");
@@ -174,6 +171,10 @@ public class Main {
             stmt8 = con.prepareStatement("insert into public.author_liked_posts(post_id, liked_author_name)" +
                     " values (?,?) on conflict(post_id,liked_author_name) do nothing;");
 
+            stmt9 = con.prepareStatement("insert into public.first_replies(post_id, first_content, first_time, first_author)" +
+                    " values (?,?,?,?);");
+            // first_id is serial number, not included in the insert statement
+
         } catch (SQLException e) {
             System.err.println("Insert statement failed");
             System.err.println(e.getMessage());
@@ -191,6 +192,7 @@ public class Main {
         if (con != null) {
             try {//rewrite later
                 stmt0 = con.createStatement();
+
                 //authors
                 stmt0.executeUpdate("drop table authors cascade;");
                 con.commit();
@@ -215,6 +217,7 @@ public class Main {
                         "author_name text references authors (author_name) not null" +
                         ");");
                 con.commit();
+
                 // categories
                 stmt0.executeUpdate("drop table categories cascade;");
                 con.commit();
@@ -265,7 +268,7 @@ public class Main {
                         ");");
                 con.commit();
 
-                //author_likes_posts (relation table)
+                //author_liked_posts (relation table)
                 stmt0.executeUpdate("drop table author_liked_posts cascade;");
                 con.commit();
                 stmt0.executeUpdate("create table if not exists author_liked_posts(\n" +
@@ -275,13 +278,27 @@ public class Main {
                         ");");
                 con.commit();
 
-                //author_liked_posts (relation table)
-                stmt0.executeUpdate("drop table author_liked_posts cascade;");
+                //first_replies (entity table)
+                stmt0.executeUpdate("drop table first_replies cascade;");
                 con.commit();
-                stmt0.executeUpdate("create table if not exists author_liked_posts(\n" +
+                stmt0.executeUpdate("create table if not exists first_replies(\n" +
+                        "first_id SERIAL primary key," +
                         "post_id   INTEGER references posts (post_id) not null," +
-                        "liked_author_name text references authors (author_name) not null," +
-                        "primary key (post_id,liked_author_name)" +
+                        "first_content            text not null," +
+                        "first_stars              INTEGER," +
+                        "first_author text references authors (author_name) not null" +
+                        ");");
+                con.commit();
+
+                //second_replies (entity table)
+                stmt0.executeUpdate("drop table second_replies cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists second_replies(\n" +
+                        "second_id SERIAL primary key," +
+                        "first_id   INTEGER references first_replies (first_id) not null," +
+                        "second_content            text not null," +
+                        "second_stars              INTEGER," +
+                        "second_author text references authors (author_name) not null" +
                         ");");
                 con.commit();
 
@@ -423,12 +440,20 @@ public class Main {
         if (con != null) {
             try {
                 //pass in attributes
-//                stmt.setInt(1, Integer.parseInt(lineData[0]));
-//                stmt.setString(2, lineData[1]);
-//                stmt.setString(3, lineData[2]);
-//                stmt.setInt(4, Integer.parseInt(lineData[3]));
-//                stmt.setInt(5, Integer.parseInt(lineData[4]));
-                stmt.executeUpdate();
+                //first reply
+                stmt9.setInt(1, postID);
+                stmt9.setString(2, replyContent);
+                stmt9.setInt(3, replyStars);
+                stmt9.setString(4, replyAuthor);
+                stmt9.executeUpdate();
+
+                //second reply
+                stmt10.setString(1, secondaryReplyContent);
+                stmt10.setInt(2, secondaryReplyStars);
+                stmt10.setString(3, secondaryReplyAuthor);
+                stmt10.executeUpdate();
+
+
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
