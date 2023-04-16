@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8a4b493-edf6-4747-9009-c9809b8b3eab" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-    </list>
+    <list default="true" id="a8a4b493-edf6-4747-9009-c9809b8b3eab" name="Changes" comment="Cooper: info relating to posts are imported. Replied remain." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,7 +13,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/.." value="Cooper" />
+        <entry key="$PROJECT_DIR$/.." value="main" />
       </map>
     </option>
   </component>
@@ -76,8 +74,16 @@
       <option name="presentableId" value="Default" />
       <updated>1681613304227</updated>
       <workItem from="1681613305245" duration="25000" />
-      <workItem from="1681632266448" duration="5425000" />
+      <workItem from="1681632266448" duration="5653000" />
     </task>
+    <task id="LOCAL-00001" summary="Cooper: info relating to posts are imported. Replied remain.">
+      <created>1681637911506</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1681637911506</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -105,5 +111,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Cooper: info relating to posts are imported. Replied remain." />
+    <option name="LAST_COMMIT_MESSAGE" value="Cooper: info relating to posts are imported. Replied remain." />
   </component>
 </project>
