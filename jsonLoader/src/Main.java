@@ -12,11 +12,15 @@ import java.util.Properties;
 public class Main {
     private static final int BATCH_SIZE = 2000;
     private static Connection con = null;
-    private static PreparedStatement stmt = null;//global statement for all inserts
+    private static PreparedStatement stmt = null;//for authors of one post
     private static PreparedStatement stmt1 = null;// for authors followed by
     private static PreparedStatement stmt2 = null;// for authors favorite
     private static PreparedStatement stmt3 = null;// for authors shared
     private static PreparedStatement stmt4 = null;// for authors liked
+    private static PreparedStatement stmt5 = null;// for authors commented
+    private static PreparedStatement stmt6 = null;// for authors replied
+    private static PreparedStatement stmt7 = null;// for authors followed by
+    private static PreparedStatement stmt8 = null;// for authors favorite
     static List<Post> posts;
     static List<Replies> replies;
 
@@ -36,7 +40,7 @@ public class Main {
         prepareStatement();
         for (Post post : posts) {
             //here post is an object with all the attributes.
-            loadAuthor(post);
+            loadPost(post);
             cnt++;
 //            if (cnt % 1000 == 0) {
 //                System.out.println("insert " + 1000 + " data successfully!");
@@ -145,8 +149,11 @@ public class Main {
             //the first serial number is not included in the insert statement.
             // phone and id card are null,registration time is randomly generated
 
-            stmt2 = con.prepareStatement("insert into public.posts (post_id,title,content,post_time,post_city,post_author_id)" +
-                    "values (?,?,?,?,?,(select authors.author_id from authors where author_name = ?)) on conflict(post_id) do nothing;");
+//            stmt2 = con.prepareStatement("insert into public.posts (post_id,title,content,post_time,post_city,post_author_id)" +
+//                    "values (?,?,?,?,?,(select authors.author_id from authors where author_name = ?)) on conflict(post_id) do nothing;");
+
+            stmt2 = con.prepareStatement("insert into public.posts(post_id,title,content,post_time,post_city, author_name)" +
+                    " values (?,?,?,?,?,?) on conflict(post_id) do nothing;");
 
             stmt3 = con.prepareStatement("insert into public.categories(category_name)" +
                     " values (?) on conflict(category_name) do nothing;");
@@ -155,6 +162,17 @@ public class Main {
                     " values (?,(select categories.category_id from categories where category_name = ?)) " +
                     "on conflict(post_id,category_id) do nothing;");
 
+            stmt5 = con.prepareStatement("insert into public.author_followers(author_name, follower_name)" +
+                    " values (?,?) on conflict(author_name,follower_name) do nothing;");
+
+            stmt6 = con.prepareStatement("insert into public.post_favorites(post_id, favorite_author_name)" +
+                    " values (?,?) on conflict(post_id,favorite_author_name) do nothing;");
+
+            stmt7 = con.prepareStatement("insert into public.author_shared_posts(post_id, shared_author_name)" +
+                    " values (?,?) on conflict(post_id,shared_author_name) do nothing;");
+
+            stmt8 = con.prepareStatement("insert into public.author_liked_posts(post_id, liked_author_name)" +
+                    " values (?,?) on conflict(post_id,liked_author_name) do nothing;");
 
         } catch (SQLException e) {
             System.err.println("Insert statement failed");
@@ -177,8 +195,8 @@ public class Main {
                 stmt0.executeUpdate("drop table authors cascade;");
                 con.commit();
                 stmt0.executeUpdate("create table if not exists authors(\n" +
-                        "author_id SERIAL primary key\n," +
-                        "author_name              text not null unique," +
+                        "author_id SERIAL\n," +
+                        "author_name              text not null unique primary key," +
                         "author_registration_time TIMESTAMP," +
                         "author_phone             text," +
                         "author_id_card           text" +
@@ -194,7 +212,7 @@ public class Main {
                         "content            text not null," +
                         "post_time               TIMESTAMP," +
                         "post_city               text," +
-                        "post_author_id INTEGER references authors (author_id) not null" +
+                        "author_name text references authors (author_name) not null" +
                         ");");
                 con.commit();
                 // categories
@@ -216,6 +234,56 @@ public class Main {
                         ");");
                 con.commit();
 
+                //author_followers (relation table)
+                stmt0.executeUpdate("drop table author_followers cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists author_followers(\n" +
+                        "author_name text references authors (author_name) not null," +
+                        "follower_name text references authors (author_name) not null," +
+                        "primary key (author_name,follower_name)" +
+                        ");");
+                con.commit();
+
+                //post_favorite (relation table)
+                stmt0.executeUpdate("drop table post_favorites cascade;");
+                con.commit();
+
+                stmt0.executeUpdate("create table if not exists post_favorites(\n" +
+                        "post_id INTEGER references posts (post_id) not null," +
+                        "favorite_author_name text references authors (author_name) not null," +
+                        "primary key (post_id,favorite_author_name)" +
+                        ");");
+                con.commit();
+
+                //author_shared_posts (relation table)
+                stmt0.executeUpdate("drop table author_shared_posts cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists author_shared_posts(\n" +
+                        "post_id   INTEGER references posts (post_id) not null," +
+                        "shared_author_name text references authors (author_name) not null," +
+                        "primary key (post_id,shared_author_name)" +
+                        ");");
+                con.commit();
+
+                //author_likes_posts (relation table)
+                stmt0.executeUpdate("drop table author_liked_posts cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists author_liked_posts(\n" +
+                        "post_id   INTEGER references posts (post_id) not null," +
+                        "liked_author_name text references authors (author_name) not null," +
+                        "primary key (post_id,liked_author_name)" +
+                        ");");
+                con.commit();
+
+                //author_liked_posts (relation table)
+                stmt0.executeUpdate("drop table author_liked_posts cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists author_liked_posts(\n" +
+                        "post_id   INTEGER references posts (post_id) not null," +
+                        "liked_author_name text references authors (author_name) not null," +
+                        "primary key (post_id,liked_author_name)" +
+                        ");");
+                con.commit();
 
 
                 stmt0.close();
@@ -230,7 +298,7 @@ public class Main {
      *
      * @param post
      */
-    private static void loadAuthor(Post post) {
+    private static void loadPost(Post post) {
         //access info through getter method.
         int postID = post.getPostID();
         String title = post.getTitle();
@@ -301,11 +369,39 @@ public class Main {
                     stmt3.executeUpdate();
                 }
 
-//                load post_category relation table
+                //load post_category relation table
                 for (String category1 : category) {
                     stmt4.setInt(1, postID);
                     stmt4.setString(2, category1);
                     stmt4.executeUpdate();
+                }
+
+                //load author_followers relation table
+                for (String followedAuthor : authorsFollowedBy) {
+                    stmt5.setString(1, authorName);
+                    stmt5.setString(2, followedAuthor);
+                    stmt5.executeUpdate();
+                }
+
+                //load post_favorites relation table
+                for (String favoriteAuthor : authorFavorite) {
+                    stmt6.setInt(1, postID);
+                    stmt6.setString(2, favoriteAuthor);
+                    stmt6.executeUpdate();
+                }
+
+                //load author_shared_posts relation table
+                for (String sharedAuthor : authorShared) {
+                    stmt7.setInt(1, postID);
+                    stmt7.setString(2, sharedAuthor);
+                    stmt7.executeUpdate();
+                }
+
+                //load author_liked_posts relation table
+                for (String likedAuthor : authorLiked) {
+                    stmt8.setInt(1, postID);
+                    stmt8.setString(2, likedAuthor);
+                    stmt8.executeUpdate();
                 }
 
 
