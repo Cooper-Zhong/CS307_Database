@@ -23,9 +23,9 @@ public class Main {
     private static PreparedStatement stmt8 = null;
     private static PreparedStatement stmt9 = null;
     private static PreparedStatement stmt10 = null;
-    private static PreparedStatement stmt11 = null;
     static List<Post> posts;
     static List<Replies> replies;
+    static long cnt = 0;
 
     public static void main(String[] args) {
         Properties prop = loadDBUser();
@@ -36,39 +36,47 @@ public class Main {
         clearDataInTable();
         closeDB();
 
-        int cnt1 = 0;
-        int cnt2 = 0;
         long start = System.currentTimeMillis();
         openDB(prop);
-
         prepareStatement();
-        for (Post post : posts) {
-            //here post is an object with all the attributes.
-            loadPost(post);
-            cnt1++;
-//            if (cnt % 1000 == 0) {
-//                System.out.println("insert " + 1000 + " data successfully!");
-//            }
-        }
-
-        for (Replies reply : replies) {
-            //here reply is an object with all the attributes.
-            loadReply(reply);
-            cnt2++;
-//            if (cnt2 % 1000 == 0) {
-//                System.out.println("insert " + 1000 + " data successfully!");
-//            }
-        }
 
         try {
+            for (Post post : posts){
+                //here post is an object with all the attributes.
+                loadPost(post);
+
+
+            }
+            for (Replies reply : replies){
+                //here reply is an object with all the attributes.
+                loadReply(reply);
+            }
+
+//            if (cnt % BATCH_SIZE != 0) {//remaining records
+                stmt.executeBatch();
+                stmt1.executeBatch();
+                stmt2.executeBatch();
+                stmt3.executeBatch();
+                stmt4.executeBatch();
+                stmt5.executeBatch();
+                stmt6.executeBatch();
+                stmt7.executeBatch();
+                stmt8.executeBatch();
+                stmt9.executeBatch();
+                stmt10.executeBatch();
+
+                System.out.println("insert " + cnt % BATCH_SIZE + " data successfully!");
+
+//            }
             con.commit();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
         closeDB();
         long end = System.currentTimeMillis();
-        System.out.println(cnt1 + cnt2 + " records successfully loaded");
-        System.out.println("Loading speed : " + ((cnt1 + cnt2) * 1000L) / (end - start) + " records/s");
+        System.out.println(cnt + " records successfully inserted.");
+        System.out.println("Insertion speed : " + ((cnt) * 1000L) / (end - start) + " insertions/s");
+        System.out.println("Time: " + (end - start) + "ms");
     }
 
 
@@ -171,10 +179,12 @@ public class Main {
             stmt8 = con.prepareStatement("insert into public.author_liked_posts(post_id, liked_author_name)" +
                     " values (?,?) on conflict(post_id,liked_author_name) do nothing;");
 
-            stmt9 = con.prepareStatement("insert into public.first_replies(post_id, first_content, first_time, first_author)" +
-                    " values (?,?,?,?);");
+            stmt9 = con.prepareStatement("insert into public.first_replies(post_id, first_content, first_stars, first_author)" +
+                    " values (?,?,?,?) on conflict(post_id,first_author,first_stars,first_content) do nothing;");
             // first_id is serial number, not included in the insert statement
 
+            stmt10 = con.prepareStatement("insert into public.second_replies(first_id, second_content, second_stars, second_author)" +
+                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?),?,?,?); ");
         } catch (SQLException e) {
             System.err.println("Insert statement failed");
             System.err.println(e.getMessage());
@@ -182,7 +192,6 @@ public class Main {
             System.exit(1);
         }
     }
-
 
     /**
      * clear data in table before import each time, to compare the speed of different import methods.
@@ -282,26 +291,27 @@ public class Main {
                 stmt0.executeUpdate("drop table first_replies cascade;");
                 con.commit();
                 stmt0.executeUpdate("create table if not exists first_replies(\n" +
-                        "first_id SERIAL primary key," +
                         "post_id   INTEGER references posts (post_id) not null," +
+                        "first_id SERIAL primary key," +
                         "first_content            text not null," +
                         "first_stars              INTEGER," +
-                        "first_author text references authors (author_name) not null" +
+                        "first_author text references authors (author_name) not null," +
+                        "unique (post_id,first_content,first_stars,first_author)" +
                         ");");
                 con.commit();
 
                 //second_replies (entity table)
+                //second to first is many to one
                 stmt0.executeUpdate("drop table second_replies cascade;");
                 con.commit();
                 stmt0.executeUpdate("create table if not exists second_replies(\n" +
                         "second_id SERIAL primary key," +
-                        "first_id   INTEGER references first_replies (first_id) not null," +
+                        "first_id   INTEGER references first_replies (first_id)," +
                         "second_content            text not null," +
                         "second_stars              INTEGER," +
                         "second_author text references authors (author_name) not null" +
                         ");");
                 con.commit();
-
 
                 stmt0.close();
             } catch (SQLException ex) {
@@ -340,35 +350,42 @@ public class Main {
                 stmt.setTimestamp(2, authorRegistrationTime);
                 stmt.setString(3, authorPhone);
                 stmt.setString(4, authorID);
+                stmt.addBatch();
                 stmt.executeUpdate();
+                stmt.addBatch();
+                cnt++;
 
                 //authors in followed list
                 for (String followedAuthor : authorsFollowedBy) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     stmt1.setString(1, followedAuthor);
                     stmt1.setTimestamp(2, ts);
-                    stmt1.executeUpdate();
+                    stmt1.addBatch();
+                    cnt++;
                 }
                 //authors in favorite list
                 for (String favoriteAuthor : authorFavorite) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     stmt1.setString(1, favoriteAuthor);
                     stmt1.setTimestamp(2, ts);
-                    stmt1.executeUpdate();
+                    cnt++;
+                    stmt1.addBatch();
                 }
                 //authors in shared list
                 for (String sharedAuthor : authorShared) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     stmt1.setString(1, sharedAuthor);
                     stmt1.setTimestamp(2, ts);
-                    stmt1.executeUpdate();
+                    cnt++;
+                    stmt1.addBatch();
                 }
                 //authors in liked list
                 for (String likedAuthor : authorLiked) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     stmt1.setString(1, likedAuthor);
                     stmt1.setTimestamp(2, ts);
-                    stmt1.executeUpdate();
+                    cnt++;
+                    stmt1.addBatch();
                 }
 
                 //load post info
@@ -378,51 +395,56 @@ public class Main {
                 stmt2.setTimestamp(4, Timestamp.valueOf(postingTime));
                 stmt2.setString(5, postingCity);
                 stmt2.setString(6, authorName);
-                stmt2.executeUpdate();
+                cnt++;
+                stmt2.addBatch();
 
                 //load category info
                 for (String category1 : category) {
                     stmt3.setString(1, category1);
-                    stmt3.executeUpdate();
+                    cnt++;
+                    stmt3.addBatch();
                 }
 
                 //load post_category relation table
                 for (String category1 : category) {
                     stmt4.setInt(1, postID);
                     stmt4.setString(2, category1);
-                    stmt4.executeUpdate();
+                    cnt++;
+                    stmt4.addBatch();
                 }
 
                 //load author_followers relation table
                 for (String followedAuthor : authorsFollowedBy) {
                     stmt5.setString(1, authorName);
                     stmt5.setString(2, followedAuthor);
-                    stmt5.executeUpdate();
+                    cnt++;
+                    stmt5.addBatch();
                 }
 
                 //load post_favorites relation table
                 for (String favoriteAuthor : authorFavorite) {
                     stmt6.setInt(1, postID);
                     stmt6.setString(2, favoriteAuthor);
-                    stmt6.executeUpdate();
+                    cnt++;
+                    stmt6.addBatch();
                 }
 
                 //load author_shared_posts relation table
                 for (String sharedAuthor : authorShared) {
                     stmt7.setInt(1, postID);
                     stmt7.setString(2, sharedAuthor);
-                    stmt7.executeUpdate();
+                    cnt++;
+                    stmt7.addBatch();
                 }
 
                 //load author_liked_posts relation table
                 for (String likedAuthor : authorLiked) {
                     stmt8.setInt(1, postID);
                     stmt8.setString(2, likedAuthor);
-                    stmt8.executeUpdate();
+                    cnt++;
+                    stmt8.addBatch();
                 }
 
-
-//                stmt.addBatch();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -439,26 +461,39 @@ public class Main {
         String secondaryReplyAuthor = reply.getSecondaryReplyAuthor();
         if (con != null) {
             try {
-                //pass in attributes
+                //authors!!!!!
+                stmt1.setString(1, replyAuthor);
+                stmt1.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                cnt++;
+                stmt1.addBatch();
+
+                stmt1.setString(1, secondaryReplyAuthor);
+                stmt1.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                cnt++;
+                stmt1.addBatch();
+
                 //first reply
                 stmt9.setInt(1, postID);
                 stmt9.setString(2, replyContent);
                 stmt9.setInt(3, replyStars);
                 stmt9.setString(4, replyAuthor);
-                stmt9.executeUpdate();
+                cnt++;
+                stmt9.addBatch();
 
                 //second reply
-                stmt10.setString(1, secondaryReplyContent);
-                stmt10.setInt(2, secondaryReplyStars);
-                stmt10.setString(3, secondaryReplyAuthor);
-                stmt10.executeUpdate();
-
+                stmt10.setInt(1, postID);
+                stmt10.setString(2, replyAuthor);
+                stmt10.setInt(3, replyStars);
+                stmt10.setString(4, replyContent);
+                stmt10.setString(5, secondaryReplyContent);
+                stmt10.setInt(6, secondaryReplyStars);
+                stmt10.setString(7, secondaryReplyAuthor);
+                cnt++;
+                stmt10.addBatch();
 
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
-
-
 }
