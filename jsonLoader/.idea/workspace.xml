@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8a4b493-edf6-4747-9009-c9809b8b3eab" name="Changes" comment="Cooper: info relating to posts are imported. Replied remain.">
-      <change beforePath="$PROJECT_DIR$/../Loader/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Loader/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="a8a4b493-edf6-4747-9009-c9809b8b3eab" name="Changes" comment="Cooper: info relating to posts are imported. Replied remain." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -45,7 +42,7 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.Main">
     <configuration name="Main (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />
       <module name="jsonLoader" />
@@ -80,6 +77,7 @@
       <workItem from="1681632266448" duration="5653000" />
       <workItem from="1681639255243" duration="24000" />
       <workItem from="1681639700241" duration="47000" />
+      <workItem from="1681642160319" duration="13000" />
     </task>
     <task id="LOCAL-00001" summary="Cooper: info relating to posts are imported. Replied remain.">
       <created>1681637911506</created>
