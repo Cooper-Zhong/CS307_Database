@@ -82,22 +82,21 @@ create table first_replies
     unique (post_id, first_content, first_stars, first_author)
 );
 
--- Table 10: sub_replies (Entity set)
+-- Table 10: sub_replies (weak entity set)
 create table second_replies
 (
     second_id      SERIAL primary key,
-    first_id       INTEGER references first_replies (first_id),
     second_content text                                  not null,
     second_stars   INTEGER,
     second_author  text references authors (author_name) not null
 );
 
--- no need
--- -- Table 11: reply_secondary_reply (Relationship set)
--- create table reply_secondary_reply
--- (
---     first_reply_id     INTEGER references first_replies (first_reply_id),
---     secondary_reply_id INTEGER references sub_replies (secondary_reply_id),
---     primary key (first_reply_id, secondary_reply_id)
--- );
+-- Table 11: first_second_replies (Relationship set)
+create table first_second_replies
+(
+    first_id  INTEGER references first_replies (first_id),
+    second_id INTEGER references second_replies (second_id),
+    primary key (first_id, second_id)
+);
+--remove first_id in original first_replies table.
 
