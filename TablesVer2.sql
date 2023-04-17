@@ -40,7 +40,6 @@ create table post_category
 create table author_followers
 (
     author_name   text references authors (author_name),
---     follower_id INTEGER references authors (author_id),
     follower_name text references authors (author_name) not null,
     primary key (author_name, follower_name)
 );
@@ -79,7 +78,7 @@ create table first_replies
     first_id      SERIAL primary key,
     first_content text                                     not null,
     first_stars   INTEGER,
-    first_author  INTEGER references authors (author_name) not null,
+    first_author  text references authors (author_name) not null,
     unique (post_id, first_content, first_stars, first_author)
 );
 
