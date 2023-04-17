@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;
+import java.util.Stack;
 
 public class Main {
     private static final int BATCH_SIZE = 2000;
@@ -23,6 +24,9 @@ public class Main {
     private static PreparedStatement stmt8 = null;
     private static PreparedStatement stmt9 = null;
     private static PreparedStatement stmt10 = null;
+    private static PreparedStatement stmt11 = null;
+    private static PreparedStatement stmt12 = null;
+    private static PreparedStatement stmt13 = null;
     static List<Post> posts;
     static List<Replies> replies;
     static long cnt = 0;
@@ -41,31 +45,33 @@ public class Main {
         prepareStatement();
 
         try {
-            for (Post post : posts){
+            for (Post post : posts) {
                 //here post is an object with all the attributes.
                 loadPost(post);
 
 
             }
-            for (Replies reply : replies){
+            for (Replies reply : replies) {
                 //here reply is an object with all the attributes.
                 loadReply(reply);
             }
 
 //            if (cnt % BATCH_SIZE != 0) {//remaining records
-                stmt.executeBatch();
-                stmt1.executeBatch();
-                stmt2.executeBatch();
-                stmt3.executeBatch();
-                stmt4.executeBatch();
-                stmt5.executeBatch();
-                stmt6.executeBatch();
-                stmt7.executeBatch();
-                stmt8.executeBatch();
-                stmt9.executeBatch();
-                stmt10.executeBatch();
+            stmt.executeBatch();
+            stmt1.executeBatch();
+            stmt2.executeBatch();
+            stmt3.executeBatch();
+            stmt4.executeBatch();
+            stmt5.executeBatch();
+            stmt6.executeBatch();
+            stmt7.executeBatch();
+            stmt8.executeBatch();
+            stmt9.executeBatch();
+            stmt10.executeBatch();
+//            stmt11.executeBatch();
+            stmt12.executeBatch();
 
-                System.out.println("insert " + cnt % BATCH_SIZE + " data successfully!");
+            System.out.println("insert " + cnt % BATCH_SIZE + " data successfully!");
 
 //            }
             con.commit();
@@ -183,8 +189,21 @@ public class Main {
                     " values (?,?,?,?) on conflict(post_id,first_author,first_stars,first_content) do nothing;");
             // first_id is serial number, not included in the insert statement
 
-            stmt10 = con.prepareStatement("insert into public.second_replies(first_id, second_content, second_stars, second_author)" +
-                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?),?,?,?); ");
+//            stmt10 = con.prepareStatement("insert into public.second_replies(first_id, second_content, second_stars, second_author)" +
+//                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?),?,?,?); ");
+
+            stmt10 = con.prepareStatement("insert into public.second_replies(second_content, second_stars, second_author)" +
+                    " values (?,?,?); ");
+            // second_id is serial number, not included in the insert statement
+
+//            stmt11 = con.prepareStatement("insert into temp_replies(post_id, first_author, first_stars, first_content, second_author, second_stars, second_content)" +
+//                    " values (?,?,?,?,?,?,?);");
+
+            stmt12 = con.prepareStatement("insert into public.first_second_replies(first_id, second_id)" +
+                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?)," +
+                    "(select second_id from second_replies where second_author = ? and second_stars = ? and second_content = ?));");
+
+
         } catch (SQLException e) {
             System.err.println("Insert statement failed");
             System.err.println(e.getMessage());
@@ -306,10 +325,31 @@ public class Main {
                 con.commit();
                 stmt0.executeUpdate("create table if not exists second_replies(\n" +
                         "second_id SERIAL primary key," +
-                        "first_id   INTEGER references first_replies (first_id)," +
                         "second_content            text not null," +
                         "second_stars              INTEGER," +
                         "second_author text references authors (author_name) not null" +
+                        ");");
+                con.commit();
+
+                //first_second_replies (relation table)
+                stmt0.executeUpdate("drop table first_second_replies cascade;");
+                con.commit();
+                stmt0.executeUpdate("create table if not exists first_second_replies(\n" +
+                        "first_id   INTEGER references first_replies (first_id) not null," +
+                        "second_id   INTEGER references second_replies (second_id) not null," +
+                        "primary key (first_id,second_id)" +
+                        ");");
+                con.commit();
+
+                stmt0.executeUpdate("drop table temp_replies cascade;");
+                stmt0.executeUpdate("create table temp_replies(\n" +
+                        "post_id   INTEGER," +
+                        "first_content            text," +
+                        "first_stars              INTEGER," +
+                        "first_author text," +
+                        "second_content            text," +
+                        "second_stars              INTEGER," +
+                        "second_author text" +
                         ");");
                 con.commit();
 
@@ -481,15 +521,34 @@ public class Main {
                 stmt9.addBatch();
 
                 //second reply
-                stmt10.setInt(1, postID);
-                stmt10.setString(2, replyAuthor);
-                stmt10.setInt(3, replyStars);
-                stmt10.setString(4, replyContent);
-                stmt10.setString(5, secondaryReplyContent);
-                stmt10.setInt(6, secondaryReplyStars);
-                stmt10.setString(7, secondaryReplyAuthor);
+                stmt10.setString(1, secondaryReplyContent);
+                stmt10.setInt(2, secondaryReplyStars);
+                stmt10.setString(3, secondaryReplyAuthor);
                 cnt++;
                 stmt10.addBatch();
+
+//                stmt11.setInt(1, postID);
+//                stmt11.setString(2, replyContent);
+//                stmt11.setInt(3, replyStars);
+//                stmt11.setString(4, replyAuthor);
+//                stmt11.setString(5, secondaryReplyContent);
+//                stmt11.setInt(6, secondaryReplyStars);
+//                stmt11.setString(7, secondaryReplyAuthor);
+//                cnt++;
+//                stmt11.addBatch();
+
+                stmt12.setInt(1, postID);
+                stmt12.setString(2, replyAuthor);
+                stmt12.setInt(3, replyStars);
+                stmt12.setString(4, replyContent);
+                stmt12.setString(5, secondaryReplyAuthor);
+                stmt12.setInt(6, secondaryReplyStars);
+                stmt12.setString(7, secondaryReplyContent);
+                cnt++;
+                stmt12.addBatch();
+
+
+
 
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
