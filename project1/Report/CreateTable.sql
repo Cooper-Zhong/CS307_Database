@@ -23,16 +23,16 @@ create table posts
 -- Table 3: categories (Entity set)
 create table categories
 (
-    category_id   SERIAL primary key,
-    category_name text not null unique
+    category_id   SERIAL,
+    category_name text not null unique primary key
 );
 
 -- Table 4: post_category (Relationship set)
 create table post_category
 (
-    post_id     INTEGER references posts (post_id),
-    category_id INTEGER references categories (category_id),
-    primary key (post_id, category_id)
+    post_id       INTEGER references posts (post_id),
+    category_name text references categories (category_name) not null,
+    primary key (post_id, category_name)
 );
 
 
@@ -40,7 +40,6 @@ create table post_category
 create table author_followers
 (
     author_name   text references authors (author_name),
---     follower_id INTEGER references authors (author_id),
     follower_name text references authors (author_name) not null,
     primary key (author_name, follower_name)
 );
@@ -86,9 +85,11 @@ create table first_replies
 -- Table 10: sub_replies (Entity set)
 create table second_replies
 (
-    second_id      SERIAL primary key,
     first_id       INTEGER references first_replies (first_id),
+    second_id      SERIAL primary key,
     second_content text                                  not null,
     second_stars   INTEGER,
     second_author  text references authors (author_name) not null
 );
+
+
