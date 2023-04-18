@@ -8,9 +8,8 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;
-import java.util.TreeSet;
 
-public class loader1Transaction {
+public class loader3Transaction {
     private static final int BATCH_SIZE = 2000;
     private static Connection con = null;
     private static PreparedStatement stmt = null;

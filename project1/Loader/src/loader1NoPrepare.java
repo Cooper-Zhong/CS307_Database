@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Properties;
 
-public class loader3NoPrepare {
+public class loader1NoPrepare {
     private static Connection con = null;
     private static Statement stmt = null;
     static List<Post> posts;
