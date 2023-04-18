@@ -24,8 +24,6 @@ public class Main {
     private static PreparedStatement stmt8 = null;
     private static PreparedStatement stmt9 = null;
     private static PreparedStatement stmt10 = null;
-    private static PreparedStatement stmt11 = null;
-    private static PreparedStatement stmt12 = null;
     static List<Post> posts;
     static List<Replies> replies;
     static long cnt = 0;
@@ -47,8 +45,6 @@ public class Main {
             for (Post post : posts) {
                 //here post is an object with all the attributes.
                 loadPost(post);
-
-
             }
             for (Replies reply : replies) {
                 //here reply is an object with all the attributes.
@@ -67,9 +63,6 @@ public class Main {
             stmt8.executeBatch();
             stmt9.executeBatch();
             stmt10.executeBatch();
-            stmt11.executeBatch();
-
-            System.out.println("insert " + cnt % BATCH_SIZE + " data successfully!");
 
 //            }
             con.commit();
@@ -167,9 +160,9 @@ public class Main {
             stmt3 = con.prepareStatement("insert into public.categories(category_name)" +
                     " values (?) on conflict(category_name) do nothing;");
 
-            stmt4 = con.prepareStatement("insert into public.post_category(post_id,category_id)" +
-                    " values (?,(select categories.category_id from categories where category_name = ?)) " +
-                    "on conflict(post_id,category_id) do nothing;");
+            stmt4 = con.prepareStatement("insert into public.post_category(post_id,category_name)" +
+                    " values (?,?) on conflict(post_id,category_name) do nothing;");
+            //the first serial number is not included in the insert statement.
 
             stmt5 = con.prepareStatement("insert into public.author_followers(author_name, follower_name)" +
                     " values (?,?) on conflict(author_name,follower_name) do nothing;");
@@ -187,14 +180,9 @@ public class Main {
                     " values (?,?,?,?) on conflict(post_id,first_author,first_stars,first_content) do nothing;");
             // first_id is serial number, not included in the insert statement
 
-            stmt10 = con.prepareStatement("insert into public.second_replies(second_content, second_stars, second_author)" +
-                    " values (?,?,?); ");
+            stmt10 = con.prepareStatement("insert into public.second_replies(first_id, second_content, second_stars, second_author)" +
+                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?),?,?,?);");
             // second_id is serial number, not included in the insert statement
-
-
-            stmt11 = con.prepareStatement("insert into public.first_second_replies(first_id, second_id)" +
-                    " values ((select first_id from first_replies where post_id = ? and first_author = ? and first_stars = ? and first_content = ?)," +
-                    "(select second_id from second_replies where second_author = ? and second_stars = ? and second_content = ?));");
 
 
         } catch (SQLException e) {
@@ -213,10 +201,8 @@ public class Main {
         if (con != null) {
             try {//rewrite later
                 stmt0 = con.createStatement();
-
                 //authors
                 stmt0.executeUpdate("drop table authors cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists authors(\n" +
                         "author_id SERIAL\n," +
                         "author_name              text not null unique primary key," +
@@ -225,10 +211,8 @@ public class Main {
                         "author_id_card           text" +
                         ");");
                 con.commit();
-
                 //posts
                 stmt0.executeUpdate("drop table posts cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists posts(\n" +
                         "post_id SERIAL primary key," +
                         "title              text not null," +
@@ -241,7 +225,6 @@ public class Main {
 
                 // categories
                 stmt0.executeUpdate("drop table categories cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists categories(\n" +
                         "category_id SERIAL primary key," +
                         "category_name              text not null unique" +
@@ -250,17 +233,15 @@ public class Main {
 
                 //post_category (relation table)
                 stmt0.executeUpdate("drop table post_category cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists post_category(\n" +
                         "post_id INTEGER references posts (post_id) not null," +
-                        "category_id INTEGER references categories (category_id) not null," +
-                        "primary key (post_id,category_id)" +
+                        "category_name text references categories (category_name) not null," +
+                        "primary key (post_id,category_name)" +
                         ");");
                 con.commit();
 
                 //author_followers (relation table)
                 stmt0.executeUpdate("drop table author_followers cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists author_followers(\n" +
                         "author_name text references authors (author_name) not null," +
                         "follower_name text references authors (author_name) not null," +
@@ -270,8 +251,6 @@ public class Main {
 
                 //post_favorite (relation table)
                 stmt0.executeUpdate("drop table post_favorites cascade;");
-                con.commit();
-
                 stmt0.executeUpdate("create table if not exists post_favorites(\n" +
                         "post_id INTEGER references posts (post_id) not null," +
                         "favorite_author_name text references authors (author_name) not null," +
@@ -281,7 +260,6 @@ public class Main {
 
                 //author_shared_posts (relation table)
                 stmt0.executeUpdate("drop table author_shared_posts cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists author_shared_posts(\n" +
                         "post_id   INTEGER references posts (post_id) not null," +
                         "shared_author_name text references authors (author_name) not null," +
@@ -291,7 +269,6 @@ public class Main {
 
                 //author_liked_posts (relation table)
                 stmt0.executeUpdate("drop table author_liked_posts cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists author_liked_posts(\n" +
                         "post_id   INTEGER references posts (post_id) not null," +
                         "liked_author_name text references authors (author_name) not null," +
@@ -301,7 +278,6 @@ public class Main {
 
                 //first_replies (entity table)
                 stmt0.executeUpdate("drop table first_replies cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists first_replies(\n" +
                         "post_id   INTEGER references posts (post_id) not null," +
                         "first_id SERIAL primary key," +
@@ -312,26 +288,16 @@ public class Main {
                         ");");
                 con.commit();
 
-                //second_replies (entity table)
-                //second to first is many to one
+                //second_replies (entity table) many to one
                 stmt0.executeUpdate("drop table second_replies cascade;");
-                con.commit();
                 stmt0.executeUpdate("create table if not exists second_replies(\n" +
+                        "first_id INTEGER references first_replies (first_id) not null," +
                         "second_id SERIAL primary key," +
                         "second_content            text not null," +
                         "second_stars              INTEGER," +
                         "second_author text references authors (author_name) not null" +
                         ");");
-                con.commit();
 
-                //first_second_replies (relation table)
-                stmt0.executeUpdate("drop table first_second_replies cascade;");
-                con.commit();
-                stmt0.executeUpdate("create table if not exists first_second_replies(\n" +
-                        "first_id   INTEGER references first_replies (first_id) not null," +
-                        "second_id   INTEGER references second_replies (second_id) not null," +
-                        "primary key (first_id,second_id)" +
-                        ");");
                 con.commit();
 
                 stmt0.close();
@@ -352,7 +318,7 @@ public class Main {
         String title = post.getTitle();
         List<String> category = post.getCategory();
         String content = post.getContent();
-        String postingTime = post.getPostingTime();
+        Timestamp postingTime = post.getPostingTime();
         String postingCity = post.getPostingCity();
         String authorName = post.getAuthorName();
         Timestamp authorRegistrationTime = post.getAuthorRegistrationTime();
@@ -371,8 +337,6 @@ public class Main {
                 stmt.setTimestamp(2, authorRegistrationTime);
                 stmt.setString(3, authorPhone);
                 stmt.setString(4, authorID);
-                stmt.addBatch();
-                stmt.executeUpdate();
                 stmt.addBatch();
                 cnt++;
 
@@ -413,7 +377,7 @@ public class Main {
                 stmt2.setInt(1, postID);
                 stmt2.setString(2, title);
                 stmt2.setString(3, content);
-                stmt2.setTimestamp(4, Timestamp.valueOf(postingTime));
+                stmt2.setTimestamp(4, postingTime);
                 stmt2.setString(5, postingCity);
                 stmt2.setString(6, authorName);
                 cnt++;
@@ -502,22 +466,15 @@ public class Main {
                 stmt9.addBatch();
 
                 //second reply
-                stmt10.setString(1, secondaryReplyContent);
-                stmt10.setInt(2, secondaryReplyStars);
-                stmt10.setString(3, secondaryReplyAuthor);
+                stmt10.setInt(1, postID);
+                stmt10.setString(2, replyAuthor);
+                stmt10.setInt(3, replyStars);
+                stmt10.setString(4, replyContent);
+                stmt10.setString(5, secondaryReplyContent);
+                stmt10.setInt(6, secondaryReplyStars);
+                stmt10.setString(7, secondaryReplyAuthor);
                 cnt++;
                 stmt10.addBatch();
-
-                stmt11.setInt(1, postID);
-                stmt11.setString(2, replyAuthor);
-                stmt11.setInt(3, replyStars);
-                stmt11.setString(4, replyContent);
-                stmt11.setString(5, secondaryReplyAuthor);
-                stmt11.setInt(6, secondaryReplyStars);
-                stmt11.setString(7, secondaryReplyContent);
-                cnt++;
-                stmt11.addBatch();
-
 
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
