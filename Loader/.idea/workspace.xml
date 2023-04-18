@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2eb74f90-b8b2-4ae8-9a92-5e5df65c049b" name="Changes" comment="Environment.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../project1/CooperReport/reportP3.md" beforeDir="false" afterPath="$PROJECT_DIR$/../project1/CooperReport/reportP3.md" afterDir="false" />
-    </list>
+    <list default="true" id="2eb74f90-b8b2-4ae8-9a92-5e5df65c049b" name="Changes" comment="Environment." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,6 +16,7 @@
         <entry key="$PROJECT_DIR$/.." value="main" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -34,7 +32,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/Users/cooperz/SUSTech/2023_Spring/CS307_DataBase/Projects/CS307_Database/Loader",
+    "last_opened_file_path": "C:/Users/25375/Desktop/DB/CS307_Database/project1/Loader",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -60,15 +58,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Application.Main" />
-        <item itemvalue="Application.Main" />
-        <item itemvalue="Application.Main" />
-        <item itemvalue="Application.Main" />
-        <item itemvalue="Application.Main" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -83,6 +72,7 @@
       <workItem from="1681639747691" duration="2404000" />
       <workItem from="1681642174317" duration="927000" />
       <workItem from="1681798973293" duration="42000" />
+      <workItem from="1681816223908" duration="22000" />
     </task>
     <task id="LOCAL-00001" summary="New project Loader.">
       <created>1681638810112</created>
