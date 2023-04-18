@@ -6,7 +6,7 @@ public class Post {
     private String title;
     private List<String> category;
     private String content;
-    private String postingTime;
+    private Timestamp postingTime;
     private String postingCity;
     private String authorName;
     private Timestamp authorRegistrationTime;
@@ -69,11 +69,11 @@ public class Post {
         this.content = content;
     }
 
-    public String getPostingTime() {
+    public Timestamp getPostingTime() {
         return postingTime;
     }
 
-    public void setPostingTime(String postingTime) {
+    public void setPostingTime(Timestamp postingTime) {
         this.postingTime = postingTime;
     }
 
