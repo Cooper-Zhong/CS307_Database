@@ -28,9 +28,11 @@ The script consists of 4 files: `dbUser.properties`,`Main`,`Post`,`Replies`.
 
 ### Task3.2
 
-In the `Main` file, we use `prepareStatement` and `Batch` to improve performance and security. 
+In the `Main` file, we use `prepareStatement`,`Transaction`and `Batch` to improve performance and security. 
 
 A `PreparedStatement` object represents a **precompiled** SQL statement that can be executed multiple times with different parameters. It helps to prevent SQL injection attacks by automatically escaping special characters in user input. Additionally, `prepareStatement` can improve performance by **caching** the compiled SQL statement, reducing the overhead of repeatedly parsing and optimizing the statement.
+
+A `transaction` is a set of one or more database operations that are executed as a single unit of work. By grouping multiple database operations into a single transaction, it reduces the number of round-trips between the Java application and the database.
 
 `Batch` is a feature that allows multiple SQL statements to be executed as a single batch, reducing the number of round-trips between the Java application and the database.
 
