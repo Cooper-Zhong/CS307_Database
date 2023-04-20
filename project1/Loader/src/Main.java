@@ -91,6 +91,7 @@ public class Main {
                 System.out.println("Successfully connected to the database "
                         + prop.getProperty("database") + " as " + prop.getProperty("user"));
                 con.setAutoCommit(false);
+                //set auto commit to false，so that the data will not be inserted into the database until the commit statement is executed.
             }
         } catch (SQLException e) {
             System.err.println("Database connection failed");

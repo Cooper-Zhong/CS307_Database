@@ -1,6 +1,8 @@
 # CS307-Database Project 1
 
-Group session: Thursday 3-4
+Group Session: Thursday 3-4
+
+Group Number:306
 
 Name(SID): 钟志源(12110517)、刘浩贤(12111515)
 
@@ -10,7 +12,7 @@ percentages of contributions： 50% : 50%
 
 ### Task 1: E-R Diagram
 
-- The E-R Diagram is draw with [diagrams.net](https://app.diagrams.net/)
+- The E-R Diagram is drawed with [diagrams.net](https://app.diagrams.net/)
 
 <img src="C:\Users\25375\Desktop\DB\CS307_Database\project1\Report\E-R Diagram.png" alt="E-R Diagram"  />
 
@@ -51,12 +53,12 @@ percentages of contributions： 50% : 50%
      - post_id: the id of the post (integer type, foreign key to posts.post_id)
      - category_name: the name of the category (text type, foreign key to categories.category_name)
    - **Primary Key**: (post_id, category_name)
-5. **Table Name: author_followers (Relationship set)**
-   - Description: This table represents the many-to-many relationship between authors and their followers. Each row represents an author and their follower.
+5. **Table Name: author_follow (Relationship set)**
+   - Description: This table represents the many-to-many relationship between authors and the account it followed. Each row represents an author and who they followed.
    - Columns:
      - author_name: the name of the author being followed (text type, foreign key to authors.author_name)
-     - follower_name: the name of the follower (text type, foreign key to authors.author_name, not null)
-   - **Primary Key**: (author_name, follower_name)
+     - followed_name: the name of the account followed by author (text type, foreign key to authors.author_name, not null)
+   - **Primary Key**: (author_name, followed_name)
 6. **Table Name: post_favorites (Relationship set)**
    - Description: This table represents the many-to-many relationship between posts and authors who have marked them as favorites. Each row represents a post and the author who marked it as a favorite.
    - Columns:

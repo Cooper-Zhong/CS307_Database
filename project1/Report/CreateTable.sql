@@ -37,11 +37,11 @@ create table post_category
 
 
 -- Table 5: author_followers (Relationship set)
-create table author_followers
+create table author_follow
 (
     author_name   text references authors (author_name),
-    follower_name text references authors (author_name) not null,
-    primary key (author_name, follower_name)
+    followed_name text references authors (author_name) not null,
+    primary key (author_name, followed_name)
 );
 
 
