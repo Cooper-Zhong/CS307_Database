@@ -126,7 +126,7 @@ public class Main {
 
     private static void loadPostsFile() {
         try {
-            String jsonStrings = Files.readString(Path.of("posts.json"));
+            String jsonStrings = Files.readString(Path.of("resources/posts.json"));
             posts = JSON.parseArray(jsonStrings, Post.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -135,7 +135,7 @@ public class Main {
 
     private static void loadRepliesFile() {
         try {
-            String jsonStrings = Files.readString(Path.of("replies.json"));
+            String jsonStrings = Files.readString(Path.of("resources/replies.json"));
             replies = JSON.parseArray(jsonStrings, Replies.class);
         } catch (IOException e) {
             throw new RuntimeException(e);

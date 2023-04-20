@@ -2,17 +2,17 @@
 
 Group Session: Thursday 3-4
 
-Group Number:306
+Group Number: 306
 
 Name(SID): 钟志源(12110517)、刘浩贤(12111515)
 
-Contribution: 钟志源（Database Design、Data Import）刘浩贤（E-R Diagram、 Database Design）
+Contribution: 钟志源（Database Design、Data Import）刘浩贤（E-R Diagram、Database Design）
 
-percentages of contributions： 50% : 50%
+Percentages of contributions： 50% : 50%
 
 ### Task 1: E-R Diagram
 
-- The E-R Diagram is drawed with [diagrams.net](https://app.diagrams.net/)
+- The E-R Diagram is drawn with [diagrams.net](https://app.diagrams.net/)
 
 <img src="C:\Users\25375\Desktop\DB\CS307_Database\project1\Report\E-R Diagram.png" alt="E-R Diagram"  />
 
@@ -22,7 +22,7 @@ percentages of contributions： 50% : 50%
 
 <img src="C:\Users\25375\Desktop\DB\CS307_Database\project1\Report\Visualization.png" alt="Visualization"  />
 
-- **The create table statements is attached with `CreateTable.sql`**
+- **The create table statements is attached with `createTable.sql`**
 - **Briefly describe the table designs and the meanings of each table and column.**
 
 1. **Table Name: authors (Entity set)**
@@ -30,10 +30,10 @@ percentages of contributions： 50% : 50%
    - Columns:
      - author_id: a unique identifier for each author, automatically incremented by the system (SERIAL type)
      - author_name: the author's name (text type, not null and unique, **primary key**)
-     - author_registration_time: the date and time when the author registered (TIMESTAMP type)
+     - author_registration_time: the date and time when the author registered (TIMESTAMP type, not null)
      - author_phone: the author's phone number (text type)
      - author_id_card: the author's identification card number (text type)
-2. Table Name: posts (Entity set)
+2. **Table Name: posts (Entity set)**
    - Description: This table stores information about posts made by authors, including the post's title, content, posting time, location, and the author who made the post.
    - Columns:
      - post_id: a unique identifier for each post, automatically incremented by the system (SERIAL type, **primary key**)
@@ -50,37 +50,37 @@ percentages of contributions： 50% : 50%
 4. **Table Name: post_category (Relationship set)**
    - Description: This table represents the many-to-many relationship between posts and categories. Each row represents a post and its associated category.
    - Columns:
-     - post_id: the id of the post (integer type, foreign key to posts.post_id)
-     - category_name: the name of the category (text type, foreign key to categories.category_name)
+     - post_id: the id of the post (integer type, foreign key to posts.post_id, not null)
+     - category_name: the name of the category (text type, foreign key to categories.category_name, not null)
    - **Primary Key**: (post_id, category_name)
 5. **Table Name: author_follow (Relationship set)**
    - Description: This table represents the many-to-many relationship between authors and the account it followed. Each row represents an author and who they followed.
    - Columns:
-     - author_name: the name of the author being followed (text type, foreign key to authors.author_name)
+     - author_name: the name of the author being followed (text type, foreign key to authors.author_name, not null)
      - followed_name: the name of the account followed by author (text type, foreign key to authors.author_name, not null)
    - **Primary Key**: (author_name, followed_name)
 6. **Table Name: post_favorites (Relationship set)**
    - Description: This table represents the many-to-many relationship between posts and authors who have marked them as favorites. Each row represents a post and the author who marked it as a favorite.
    - Columns:
-     - post_id: the id of the post being favorited (integer type, foreign key to posts.post_id)
+     - post_id: the id of the post being favorited (integer type, foreign key to posts.post_id, not null)
      - favorite_author_name: the name of the author who favorited the post (text type, foreign key to authors.author_name, not null)
    - **Primary Key**: (post_id, favorite_author_name)
 7. **Table Name: author_shared_posts (Relationship set)**
    - Description: This table represents the many-to-many relationship between authors and posts that they have shared. Each row represents a post and the author who shared it.
    - Columns:
-     - post_id: the id of the post being shared (integer type, foreign key to posts.post_id)
+     - post_id: the id of the post being shared (integer type, foreign key to posts.post_id, not null)
      - shared_author_name: the name of the author who shared the post (text type, foreign key to authors.author_name, not null)
    - **Primary Key**: (post_id, shared_author_name)
 8. **Table Name: author_liked_posts (Relationship set)**
    - Description: This table represents the many-to-many relationship between authors and posts that they have liked. Each row represents a post and the author who liked it.
    - Columns:
-     - post_id: the id of the post being liked (integer type, foreign key to posts.post_id)
+     - post_id: the id of the post being liked (integer type, foreign key to posts.post_id, not null)
      - liked_author_name: the name of the author who liked the post (text type, foreign key to authors.author_name, not null)
    - **Primary Key**: (post_id, liked_author_name)
 9. **Table Name: first_replies (Entity set)**
    - Description: This table stores information about the first reply to a post, including the reply's ID, content, rating, and author.
    - Columns:
-     - post_id: the id of the post being replied to (integer type, foreign key to posts.post_id)
+     - post_id: the id of the post being replied to (integer type, foreign key to posts.post_id, not null)
      - first_id: a unique identifier for each first reply, automatically incremented by the system (SERIAL type, **primary key**)
      - first_content: the content of the first reply (text type, not null)
      - first_stars: the number of stars received by the first reply (integer type)
@@ -89,7 +89,7 @@ percentages of contributions： 50% : 50%
     - Description: This table stores information about the second reply to a post, including the reply's ID, content, rating, and author, as well as the ID of the first reply that it is associated with.
     - Columns:
       - second_id: a unique identifier for each second reply, automatically incremented by the system (SERIAL type, **primary key**)
-      - first_id: the id of the first reply being replied to (integer type, foreign key to first_replies.first_id)
+      - first_id: the id of the first reply being replied to (integer type, foreign key to first_replies.first_id, not null)
       - second_content: the content of the second reply (text type, not null)
       - second_stars: the number of stars received by the second reply (integer type)
       - second_author: the name of the author who wrote the second reply (text type, foreign key to authors.author_name, not null)
@@ -118,9 +118,9 @@ The script consists of 4 files: `dbUser.properties`,`Main`,`Post`,`Replies`.
 10. Close database connection.
 11. Stop the timer.
 
-**Prerequisites**: Make sure the `dbUser.properties` is in a directory called `resources` under the project, make sure the directory `lib` contains `fastjson.jar` and `postgresql.jar` and add `lib` **as library**.
+**Prerequisites**: Make sure `dbUser.properties`,`posts.json` and `replies.json` are in a directory called `resources` under the project. Make sure the directory `lib` contains `fastjson.jar` and `postgresql.jar` and add `lib` **as library**.
 
-**Cautions**: Make sure that `posts.json` and `replies.json` are in the same directory as `Main`. Make sure that there are **NO space** in the attributes name in the json file. **Before** executing `Main`, please create the corresponding tables in advance!
+**Cautions**:  Make sure `dbUser.properties` contains valid database information, make sure that there are **NO space** in the attributes name in the json file.
 
 For the script, please refer to the attachments.
 
@@ -128,19 +128,17 @@ For the script, please refer to the attachments.
 
 In the `Main` file, we use **`PreparedStatement`**,**`Transaction`** and **`Batch`** to improve performance and security.
 
-In `loader1NoPrepare`, we use normal `Statement` to execute sql inserts. Since there could be `'` in an English sentence, SQL injection problem happened and data import failed.
+In `loader1NoPrepare`, we use normal `Statement` to execute sql inserts. Since there could be **`'`** in an English sentence, SQL **injection** problem happened and data import failed.
 
-In `loader2Prepare`, we use **`PreparedStatement`** to **precompile** the SQL statement once and then execute it multiple times with different parameter values. It helps to prevent SQL injection attacks by automatically escaping special characters in user input. Additionally, `PreparedStatement` can improve performance by **caching** the compiled SQL statement, reducing the overhead of repeatedly parsing and optimizing the statement.
-On average: 4400 ms
+In `loader2Prepare`, we use **`PreparedStatement`** to **precompile** the SQL statement once and then execute it multiple times with different parameter values. It helps to prevent SQL injection attacks by automatically escaping special characters in user input. Additionally, `PreparedStatement` can improve performance by **caching** the compiled SQL statement, reducing the overhead of repeatedly parsing and optimizing the statement. `On average: 4500 ms`
 
 ```bash
 53308 records successfully inserted.
-Insertion speed: 11573 insertions/s
-Time spent: 4406 ms
-```
+Insertion speed: 11912 insertions/s
+Time spent: 4475 ms
+``` 
 
-In `loader3Transaction`, we added **`Transaction`**. We start a `transaction` by disabling auto-commit mode, and then perform the database operations. If all the operations are successful, we commit the transaction. By grouping multiple operations into a single transaction, it reduces the number of round-trips between the Java application and the database.
-On average: 1550 ms.
+In `loader3Transaction`, we added **`Transaction`**. We start a `transaction` by disabling auto-commit mode, and then perform the database operations. If all the operations are successful, we commit the transaction. By grouping multiple operations into a single transaction, the database doesn't have to perform multiple commit operations for each individual SQL statement. It caches the changes and then `commit` to the database just **once** after all things are done. `On average: 1600 ms.`
 
 ```bash
 53308 records successfully inserted.
@@ -148,13 +146,12 @@ Insertion speed: 33151 insertions/s
 Time spent: 1608 ms
 ```
 
-In `Main`, we added **`Batch`**. It allows multiple SQL statements to be executed as a single batch, reducing the number of round-trips between the Java application and the database.
-On average: 600 ms.
+In `Main`, we added **`Batch`**. It allows multiple SQL statements to be executed as a single batch, reducing the amount of network traffic between the client and the database server. With individual insertions, each insert statement requires a separate network round-trip between client-server. With `batch` insertions, multiple insert statements can be sent to the server in a single network round-trip. `On average: 620 ms.`
 
 ```bash
 53308 records successfully inserted.
-Insertion speed: 93359 insertions/s
-Time spent: 571 ms
+Insertion speed: 85020 insertions/s
+Time spent: 627 ms
 ```
 
 Test environment: Apple MacBook Pro 2021 (M1 pro,8 cores) 16GB RAM, macOS 12.6.3. To summarize, `Batch` inserts can be useful for inserting large amounts of data, `PreparedStatement` can be useful for executing similar SQL statements multiple times, and `transactions` can be useful for ensuring data consistency.
