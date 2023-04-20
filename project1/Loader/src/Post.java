@@ -16,7 +16,6 @@ public class Post {
     private List<String> authorFavorite;
     private List<String> authorShared;
     private List<String> authorLiked;
-
     @Override
     public String toString() {
         return "Post{" +
@@ -45,6 +44,14 @@ public class Post {
         this.postID = postID;
     }
 
+    public void setPostingTime(Timestamp postingTime) {
+        this.postingTime = postingTime;
+    }
+
+    public Timestamp getPostingTime() {
+        return postingTime;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -69,13 +76,6 @@ public class Post {
         this.content = content;
     }
 
-    public Timestamp getPostingTime() {
-        return postingTime;
-    }
-
-    public void setPostingTime(Timestamp postingTime) {
-        this.postingTime = postingTime;
-    }
 
     public String getPostingCity() {
         return postingCity;

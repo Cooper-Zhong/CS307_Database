@@ -144,8 +144,8 @@ public class loader2Prepare {
                     " values (?,?) on conflict(post_id,category_name) do nothing;");
             //the first serial number is not included in the insert statement.
 
-            stmt5 = con.prepareStatement("insert into public.author_followers(author_name, follower_name)" +
-                    " values (?,?) on conflict(author_name,follower_name) do nothing;");
+            stmt5 = con.prepareStatement("insert into public.author_follow(author_name, followed_name)" +
+                    " values (?,?) on conflict(author_name,followed_name) do nothing;");
 
             stmt6 = con.prepareStatement("insert into public.post_favorites(post_id, favorite_author_name)" +
                     " values (?,?) on conflict(post_id,favorite_author_name) do nothing;");
@@ -219,11 +219,11 @@ public class loader2Prepare {
                         ");");
 
                 //author_followers (relation table)
-                stmt0.executeUpdate("drop table author_followers cascade;");
-                stmt0.executeUpdate("create table if not exists author_followers(\n" +
+                stmt0.executeUpdate("drop table author_follow cascade;");
+                stmt0.executeUpdate("create table if not exists author_follow(\n" +
                         "author_name text references authors (author_name) not null," +
-                        "follower_name text references authors (author_name) not null," +
-                        "primary key (author_name,follower_name)" +
+                        "followed_name text references authors (author_name) not null," +
+                        "primary key (author_name,followed_name)" +
                         ");");
 
                 //post_favorite (relation table)

@@ -156,11 +156,11 @@ public class loader1NoPrepare {
                         ");");
 
                 //author_followers (relation table)
-                stmt0.executeUpdate("drop table author_followers cascade;");
-                stmt0.executeUpdate("create table if not exists author_followers(\n" +
+                stmt0.executeUpdate("drop table author_follow cascade;");
+                stmt0.executeUpdate("create table if not exists author_follow(\n" +
                         "author_name text references authors (author_name) not null," +
-                        "follower_name text references authors (author_name) not null," +
-                        "primary key (author_name,follower_name)" +
+                        "followed_name text references authors (author_name) not null," +
+                        "primary key (author_name,followed_name)" +
                         ");");
 
                 //post_favorite (relation table)
@@ -315,8 +315,8 @@ public class loader1NoPrepare {
 
                 //load author_followers relation table
                 for (String followedAuthor : authorsFollowedBy) {
-                    sql1 = String.format("insert into public.author_followers(author_name,followed_author_name) " +
-                            "values ('%s','%s') on conflict(author_name,followed_author_name) do nothing;", authorName, followedAuthor);
+                    sql1 = String.format("insert into public.author_follow(author_name,followed_name) " +
+                            "values ('%s','%s') on conflict(author_name,followed_name) do nothing;", authorName, followedAuthor);
 
                     cnt++;
                     stmt = con.createStatement();
