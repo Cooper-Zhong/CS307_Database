@@ -29,7 +29,6 @@ public class Main {
         Properties prop = loadDBUser();
 
         openDB(prop);
-        prepareStatement();
 
 
         closeDB();
