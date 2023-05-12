@@ -206,25 +206,13 @@ public class BrowseHandler {
                 do {
                     int cur_post_id = rs.getInt("post_id");
                     if (cur_post_id != post_id) {// new post
-                        post_id = cur_post_id;
-                        System.out.println("[ post_id ]: " + post_id);
-                        System.out.println("[ author_name ]: " + rs.getString("author_name"));
-                        System.out.println("[ title ]: " + rs.getString("title"));
-                        System.out.println("[ content ]: " + rs.getString("content"));
-                        System.out.println("[ post_time ]: " + rs.getDate("post_time"));
+                        post_id = outPost(rs, cur_post_id);
                         System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
                     }//then print first reply
-                    int cur_first_id = rs.getInt("first_id");
-                    if (cur_first_id != first_id && rs.getString("first_author") != null ) {// new first reply
-                        first_id = cur_first_id;
-                        System.out.println("[ first reply id ]: " + first_id);
-                        System.out.println("[ first content ]: " + rs.getString("first_content"));
-                        System.out.println("[ first author ]: " + rs.getString("first_author"));
-                        System.out.println("----------------------------------------------------------------------------------");
-                    }
+                    first_id = outFirst(rs, first_id);
                     //then print second reply
                     int cur_second_id = rs.getInt("second_id");
-                    if (cur_second_id != second_id&& rs.getString("second_author") != null) {// new second reply
+                    if (cur_second_id != second_id && rs.getString("second_author") != null) {// new second reply
                         second_id = cur_second_id;
                         System.out.println("[ second reply id ]: " + rs.getInt("second_id"));
                         System.out.println("[ second content ]: " + rs.getString("second_content"));
@@ -250,24 +238,10 @@ public class BrowseHandler {
                 do {// print post first
                     int cur_post_id = rs.getInt("post_id");
                     if (cur_post_id != post_id) {// new post
-                        post_id = cur_post_id;
+                        post_id = outPost(rs, cur_post_id);
                         System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------------");
-                        System.out.println("[ post_id ]: " + post_id);
-                        System.out.println("[ author_name ]: " + rs.getString("author_name"));
-                        System.out.println("[ title ]: " + rs.getString("title"));
-                        System.out.println("[ content ]: " + rs.getString("content"));
-                        System.out.println("[ post_time ]: " + rs.getDate("post_time"));
-                        System.out.println("-------------------------------------------------------------------------------------------------");
                     }//then print first reply
-                    int cur_first_id = rs.getInt("first_id");
-                    if (cur_first_id != first_id && rs.getString("first_author") != null) {// new first reply
-                        first_id = cur_first_id;
-                        System.out.println("[ first_id ]: " + rs.getInt("first_id"));
-                        System.out.println("[ first_stars ]: " + rs.getInt("first_stars"));
-                        System.out.println("[ first_author ]: " + rs.getString("first_author"));
-                        System.out.println("[ first_content ]: " + rs.getString("first_content"));
-                        System.out.println("------------------------------------------------");
-                    }
+                    first_id = outFirst(rs, first_id);
 
                 } while (rs.next());
             } else {
@@ -281,6 +255,44 @@ public class BrowseHandler {
         }
     }
 
+    /**
+     * print first reply to console
+     *
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
+    private int outFirst(ResultSet rs, int first_id) throws SQLException {
+        int cur_first_id = rs.getInt("first_id");
+        if (cur_first_id != first_id && rs.getString("first_author") != null) {// new first reply
+            first_id = cur_first_id;
+            System.out.println("[ first_id ]: " + rs.getInt("first_id"));
+            System.out.println("[ first_stars ]: " + rs.getInt("first_stars"));
+            System.out.println("[ first_author ]: " + rs.getString("first_author"));
+            System.out.println("[ first_content ]: " + rs.getString("first_content"));
+            System.out.println("----------------------------------------------------------------------------------");
+        }
+        return first_id;
+    }
+
+    /**
+     * print post to console
+     *
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
+    private int outPost(ResultSet rs, int cur_post_id) throws SQLException {
+        int post_id;
+        post_id = cur_post_id;
+        System.out.println("[ Post ID ]: " + rs.getInt("post_id"));
+        System.out.println("[ Title ]: " + rs.getString("title"));
+        System.out.println("[ Author ]: " + rs.getString("author_name"));
+        System.out.println("[ Content ]: " + rs.getString("content"));
+        System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
+        return post_id;
+    }
+
     private void printPost(ResultSet rs) throws SQLException {
         if (rs.next()) {// if there is result
             rs.first();// roll back to the first one
@@ -288,12 +300,7 @@ public class BrowseHandler {
             do {
                 int cur_post_id = rs.getInt("post_id");
                 if (cur_post_id != post_id) {// new post
-                    post_id = cur_post_id;
-                    System.out.println("[ Post ID ]: " + rs.getInt("post_id"));
-                    System.out.println("[ Title ]: " + rs.getString("title"));
-                    System.out.println("[ Author ]: " + rs.getString("author_name"));
-                    System.out.println("[ Content ]: " + rs.getString("content"));
-                    System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
+                    post_id = outPost(rs, cur_post_id);
                     System.out.println("-------------------------------------------------------------------------------------------------------------------");
                 }
 
