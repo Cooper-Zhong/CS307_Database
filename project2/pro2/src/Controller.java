@@ -50,7 +50,8 @@ public class Controller {
         System.out.println("[3] Me"); // me
         System.out.println("[4] To post"); // post
         System.out.println("[5] Reply"); // reply
-        System.out.println("[6] logout"); // logout
+        System.out.println("[6] Show hot trend"); // show hot posts
+        System.out.println("[7] Logout"); // logout
         System.out.println("---------------------------------------------------------------------------------------------------------------------------");
         opcode = readNum(); // read operation code
     }
@@ -62,7 +63,8 @@ public class Controller {
             case 3 -> meHandler.handleMe();
             case 4 -> postHandler.handlePost();
             case 5 -> replyHandler.handleReply();
-            case 6 -> accountHandler.logout();
+            case 6 -> browseHandler.showHotSearchList();
+            case 7 -> accountHandler.logout();
             default -> System.out.println("Invalid input, please try again.");
         }
     }

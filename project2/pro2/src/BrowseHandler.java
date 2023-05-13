@@ -41,6 +41,42 @@ public class BrowseHandler {
         }
     }
 
+    /**
+     * called when a user search for a keyword/author/category
+     */
+    private void addHotSearchList(String searchContent) {
+        String sql = "insert into hot_search_list (search_content) values (?)";
+        try {
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, searchContent);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showHotSearchList() {
+        String sql = " select search_content, count(search_content) as frequency " +
+                "from hot_search_list group by search_content order by frequency desc limit 20";
+        //order by the content's frequency, show top 20.
+        try {
+            stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet rs = stmt.executeQuery();
+            System.out.println("The top 20 hot search list:");
+            System.out.println("---------------------------");
+            if (rs.next()) {
+                rs.first();
+                int rank = 1;
+                System.out.println("Rank\tContent\t\tFrequency");
+                do {
+                    System.out.printf("%-5d\t%-10s\t%-10d\n", rank++, rs.getString("search_content"), rs.getInt("frequency"));
+                } while (rs.next());
+            } else System.out.println("No history.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void browsePost(int opcode) {
         //multiple parameters
         System.out.println("Please input some parameters to browse posts:");
@@ -118,16 +154,19 @@ public class BrowseHandler {
             switch (codes[i]) {
                 case "1" -> {// author_name
                     sql.append(" and author_name ilike ?");
+                    addHotSearchList(values[i]);
                     params.add(values[i]);
                 }
                 case "2" -> { // keyword
                     sql.append(" and (content ilike ? or title ilike ?)");
                     String t = "%" + values[i] + "%";
+                    addHotSearchList(values[i]);
                     params.add(t);
                     params.add(t);
                 }
                 case "3" -> { // category
                     sql.append(" and category_name = ?");
+                    addHotSearchList(values[i]);
                     params.add(values[i]);
                 }
                 case "4" -> { // from_time
@@ -188,7 +227,7 @@ public class BrowseHandler {
             switch (opcode) {
                 case 1 -> printer.printPost(rs);
                 case 2 -> printer.printFirstReply(rs);
-                case 3 -> printer.printSecondReply(rs,false);
+                case 3 -> printer.printSecondReply(rs, false);
                 default -> {
                 }
             }
@@ -253,7 +292,7 @@ public class BrowseHandler {
             //left join to preserve first replies without second replies
             stmt.setInt(1, post_id);
             rs = stmt.executeQuery();
-            printer.printSecondReply(rs,false);
+            printer.printSecondReply(rs, false);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             System.err.println("Search failed, please try again.");
