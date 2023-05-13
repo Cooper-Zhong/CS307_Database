@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 public class QuadrantHandler {
     /**
+     * 点赞、收藏、转发、关注、取关、屏蔽
      * 一键三连加关注!
      * 1.like 2.favorite 3.share 4.follow
      */
@@ -21,7 +22,8 @@ public class QuadrantHandler {
     }
 
     public void handleQuadrant() {
-        System.out.println("Operation: [1]like a post\t[2]favorite a post\t[3]share a post\t[4]follow a user\t[5]unfollow a user");
+        System.out.println("Operation: [1]like a post\t[2]favorite a post\t[3]share a post");
+        System.out.println("           [4]follow a user\t[5]unfollow a user\t[6]block a user\t[7]unblock a user");
         // current operation code
         int opcode = readNum();
         switch (opcode) {
@@ -30,10 +32,50 @@ public class QuadrantHandler {
             case 3 -> sharePost3();
             case 4 -> followUser();
             case 5 -> unfollowUser();
+            case 6 -> blockUser();
+            case 7 -> unblockUser();
             default -> {
                 System.out.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
             }
+        }
+    }
+
+    private void unblockUser() {
+        System.out.println("Please input the user you want to unblock:");
+        in.nextLine();
+        String blockee = in.nextLine();
+        try {
+            String sql = "delete from block_user where author = ? and blocked_author = ?;";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, AccountHandler.getUser());
+            stmt.setString(2, blockee);
+            stmt.executeUpdate();
+            System.out.println("You unblocked [ " + blockee + " ]");
+            System.out.println("----------------------------------");
+        } catch (SQLException e) {
+            System.out.println("[ " + blockee + " ] is not in your block list.");
+            System.out.println("------------------------------------");
+            System.err.println("" + e.getMessage());
+        }
+    }
+
+    private void blockUser() {
+        System.out.println("Please input the user you want to block:");
+        in.nextLine();
+        String blockee = in.nextLine();
+        try {
+            String sql = "insert into block_user (author,blocked_author) values (?,?);";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, AccountHandler.getUser());
+            stmt.setString(2, blockee);
+            stmt.executeUpdate();
+            System.out.println("You blocked [ " + blockee + " ]");
+            System.out.println("----------------------------------");
+        } catch (SQLException e) {
+            System.out.println("You have already blocked [ " + blockee + " ]");
+            System.out.println("----------------------------------");
+            System.err.println("" + e.getMessage());
         }
     }
 

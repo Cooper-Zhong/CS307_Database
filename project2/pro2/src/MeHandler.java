@@ -28,6 +28,7 @@ public class MeHandler {
     public void handleMe() {
         System.out.println("Operation: [1]show liked posts\t[2]show favorite posts\t[3]show shared posts");
         System.out.println("           [4]show following list\t[5]view my posts\t[6]view my replies");
+//        System.out.println("           [7]block user\t");
         System.out.println("----------------------------------------------------------------------------");
         // current operation code
         int opcode = readNum();
@@ -45,6 +46,7 @@ public class MeHandler {
         }
 
     }
+
 
     private void viewMyReplies6() {
         try {

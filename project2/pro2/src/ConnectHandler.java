@@ -30,7 +30,7 @@ public class ConnectHandler {
             System.err.println("Cannot find the Postgres driver. Check CLASSPATH.");
             System.exit(1);
         }
-        String url = "jdbc:postgresql://" + prop.getProperty("host") + ":7654" + "/" + prop.getProperty("database");//gauss
+        String url = "jdbc:postgresql://" + prop.getProperty("host") + "/" + prop.getProperty("database");//postgres
         try {
             con = DriverManager.getConnection(url, prop);
             if (con != null) {

@@ -64,10 +64,6 @@ public class Printer {
 
     /**
      * print first reply to console
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
      */
     public int outFirst(ResultSet rs, int first_id) throws SQLException {
         int cur_first_id = rs.getInt("first_id");
@@ -84,10 +80,6 @@ public class Printer {
 
     /**
      * print post to console
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
      */
     public int outPost(ResultSet rs, int cur_post_id) throws SQLException {
         int post_id;

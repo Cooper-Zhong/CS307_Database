@@ -4,12 +4,8 @@ import java.util.regex.Pattern;
 
 public class Controller {
     private static Connection con;
-    private static PreparedStatement stmt;
     private static Scanner in = new Scanner(System.in);
     private static int opcode; // current operation code
-    private static boolean exitForum = false; // exit flag
-    private static boolean exitUser = false; // exit user flag
-
 
     static QuadrantHandler quadrantHandler;
     static AccountHandler accountHandler;
@@ -50,11 +46,11 @@ public class Controller {
     public void prompt() {
         System.out.println("Select the operations you want, enter the corresponding number:");
         // try to be hierarchy.
-        System.out.println("[1] browse posts"); // browse
-        System.out.println("[2] like/favorite/share posts | follow/unfollow users"); // quadrant
-        System.out.println("[3] show liked/favorite/shared posts | show following list"); // me
-        System.out.println("[4] create/delete posts"); // post
-        System.out.println("[5] reply posts"); // reply
+        System.out.println("[1] Browse posts"); // browse
+        System.out.println("[2] like/favorite/share/(un)follow/(un)block"); // quadrant
+        System.out.println("[3] Me"); // me
+        System.out.println("[4] To post"); // post
+        System.out.println("[5] Reply"); // reply
         System.out.println("[6] logout"); // logout
         System.out.println("---------------------------------------------------------------------------------------------------------------------------");
         opcode = readNum(); // read operation code
