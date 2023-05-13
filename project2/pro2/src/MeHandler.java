@@ -17,10 +17,12 @@ public class MeHandler {
     private static Connection con;
     private static PreparedStatement stmt;
     private static Scanner in;
+    private static Printer printer;//print the result of posts
 
     public MeHandler(Connection con, Scanner in) {
         MeHandler.con = con;
         MeHandler.in = in;
+        printer = new Printer();
     }
 
     public void handleMe() {
@@ -47,46 +49,18 @@ public class MeHandler {
     private void viewMyReplies6() {
         try {
             String sql = "select * from posts p join first_replies fr on p.post_id = fr.post_id " +
-                    "join second_replies sr on fr.first_id = sr.first_id " +
+                    "left join second_replies sr on fr.first_id = sr.first_id " +
                     "where fr.first_author = ? or sr.second_author = ?;";
+            //left join in order to show the first reply even if there is no second reply
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, AccountHandler.getUser());
             ResultSet rs = stmt.executeQuery();
             System.out.println("Your replies are:");
-            System.out.println("-------------------------");
-            printSecondReply(rs);
+            System.out.println("-----------------");
+            printer.printSecondReply(rs);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
-        }
-    }
-
-    private void printSecondReply(ResultSet rs) {
-        try {
-            int first_id = 0;
-            if (rs.next()) {
-                rs.first();
-                do {
-                    int cur_first_id = rs.getInt("first_id");
-                    if (cur_first_id != first_id) {// new first reply
-                        first_id = cur_first_id;
-                        System.out.println("-------------------------------------------------------------------------------------------------------------------------");
-                        System.out.println("[ first reply id ]: " + first_id);
-                        System.out.println("[ first content ]: " + rs.getString("first_content"));
-                        System.out.println("[ first author ]: " + rs.getString("first_author"));
-                        System.out.println("--------------------------------------------------------------------");
-                    }
-                    System.out.println("[ second reply id ]: " + rs.getInt("second_id"));
-                    System.out.println("[ second content ]: " + rs.getString("second_content"));
-                    System.out.println("[ second author ]: " + rs.getString("second_author"));
-                    System.out.println("----------------------------------");
-                } while (rs.next());
-            } else {
-                System.out.println("No second replies.");
-                System.out.println("------------------");
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
         }
     }
 
@@ -99,7 +73,7 @@ public class MeHandler {
             ResultSet rs = stmt.executeQuery();
             System.out.println("The posts you posted are:");
             System.out.println("-------------------------");
-            printPost(rs);
+            printer.printPost(rs);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
         }
@@ -139,7 +113,7 @@ public class MeHandler {
             ResultSet rs = stmt.executeQuery();
             System.out.println("The posts you shared are:");
             System.out.println("-------------------------");
-            printPost(rs);
+            printer.printPost(rs);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
         }
@@ -156,7 +130,7 @@ public class MeHandler {
             ResultSet rs = stmt.executeQuery();
             System.out.println("The posts you favorite are:");
             System.out.println("---------------------------");
-            printPost(rs);
+            printer.printPost(rs);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
         }
@@ -173,28 +147,11 @@ public class MeHandler {
             ResultSet rs = stmt.executeQuery();
             System.out.println("The posts you liked are:");
             System.out.println("------------------------");
-            printPost(rs);
+            printer.printPost(rs);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
         }
 
-    }
-
-    private void printPost(ResultSet rs) throws SQLException {
-        if (rs.next()) {// if there is result
-            rs.first();// roll back to the first one
-            do {
-                System.out.println("[ Post ID ]: " + rs.getInt("post_id"));
-                System.out.println("[ Title ]: " + rs.getString("title"));
-                System.out.println("[ Author ]: " + rs.getString("author_name"));
-                System.out.println("[ Content ]: " + rs.getString("content"));
-                System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
-                System.out.println("-------------------------------------------------------------------");
-            } while (rs.next());
-        } else {
-            System.out.println("No post are found.");
-            System.out.println("-------------------------------------------------------------------");
-        }
     }
 
     private boolean isNum(String s) {

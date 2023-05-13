@@ -21,9 +21,8 @@ public class AccountHandler {
         return user;
     }
 
-    public AccountHandler(Connection con, String user, Scanner in) {
+    public AccountHandler(Connection con, Scanner in) {
         AccountHandler.con = con;
-        AccountHandler.user = user;
         AccountHandler.in = in;
     }
 

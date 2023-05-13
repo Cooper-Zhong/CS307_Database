@@ -16,10 +16,12 @@ public class BrowseHandler {
     private static Connection con;
     private static PreparedStatement stmt;
     private static Scanner in;
+    private static Printer printer;//print the result of posts
 
     public BrowseHandler(Connection con, Scanner in) {
         BrowseHandler.con = con;
         BrowseHandler.in = in;
+        printer = new Printer();
     }
 
     public void handleBrowse() {
@@ -68,6 +70,7 @@ public class BrowseHandler {
         multiSearch(codes, values, opcode);
     }
 
+    //browse with post_id
     private void browseFirstReplies() {
         System.out.println("Please enter the post_id you want to browse:");
         System.out.println("---------------------------------------------");
@@ -77,13 +80,13 @@ public class BrowseHandler {
                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             stmt.setInt(1, post_id);
             ResultSet rs = stmt.executeQuery();
-            printPost(rs);
+            printer.printPost(rs);
             System.out.println("The first replies:");
             stmt = con.prepareStatement("select * from first_replies where post_id = ?;",
                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             stmt.setInt(1, post_id);
             rs = stmt.executeQuery();
-            printFirstReply(rs);
+            printer.printFirstReply(rs);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             System.out.println("Search failed, please try again.");
@@ -91,6 +94,7 @@ public class BrowseHandler {
         }
     }
 
+    //browse with post_id
     private void browseAllReplies() {
         System.out.println("Please enter the post_id you want to browse:");
         System.out.println("---------------------------------------------");
@@ -100,12 +104,13 @@ public class BrowseHandler {
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setInt(1, post_id);
             ResultSet rs = stmt.executeQuery();
-            printPost(rs);
-            stmt = con.prepareStatement("select * from first_replies fr join second_replies sr on fr.first_id = sr.first_id " +
+            printer.printPost(rs);
+            stmt = con.prepareStatement("select * from first_replies fr left join second_replies sr on fr.first_id = sr.first_id " +
                     "where fr.post_id = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            //left join to preserve first replies without second replies
             stmt.setInt(1, post_id);
             rs = stmt.executeQuery();
-            printSecondReply(rs);
+            printer.printSecondReply(rs);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             System.out.println("Search failed, please try again.");
@@ -182,9 +187,9 @@ public class BrowseHandler {
             }
             ResultSet rs = stmt.executeQuery();
             switch (opcode) {
-                case 1 -> printPost(rs);
-                case 2 -> printFirstReply(rs);
-                case 3 -> printSecondReply(rs);
+                case 1 -> printer.printPost(rs);
+                case 2 -> printer.printFirstReply(rs);
+                case 3 -> printer.printSecondReply(rs);
                 default -> {
                 }
             }
@@ -193,121 +198,6 @@ public class BrowseHandler {
             System.err.println(e.getMessage());
             System.out.println("Search failed, please try again.");
             System.out.println("--------------------------------");
-        }
-    }
-
-    private void printSecondReply(ResultSet rs) {
-        try {
-            int post_id = 0;
-            int first_id = 0;
-            int second_id = 0;
-            if (rs.next()) {
-                rs.first();
-                do {
-                    int cur_post_id = rs.getInt("post_id");
-                    if (cur_post_id != post_id) {// new post
-                        post_id = outPost(rs, cur_post_id);
-                        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------");
-                    }//then print first reply
-                    first_id = outFirst(rs, first_id);
-                    //then print second reply
-                    int cur_second_id = rs.getInt("second_id");
-                    if (cur_second_id != second_id && rs.getString("second_author") != null) {// new second reply
-                        second_id = cur_second_id;
-                        System.out.println("[ second reply id ]: " + rs.getInt("second_id"));
-                        System.out.println("[ second content ]: " + rs.getString("second_content"));
-                        System.out.println("[ second author ]: " + rs.getString("second_author"));
-                        System.out.println("----------------------------------");
-                    }
-                } while (rs.next());
-            } else {
-                System.out.println("No second replies.");
-                System.out.println("------------------");
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
-    private void printFirstReply(ResultSet rs) {
-        try {
-            int post_id = 0;
-            int first_id = 0;
-            if (rs.next()) {
-                rs.first();
-                do {// print post first
-                    int cur_post_id = rs.getInt("post_id");
-                    if (cur_post_id != post_id) {// new post
-                        post_id = outPost(rs, cur_post_id);
-                        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------------");
-                    }//then print first reply
-                    first_id = outFirst(rs, first_id);
-
-                } while (rs.next());
-            } else {
-                System.out.println("No reply found.");
-                System.out.println("---------------");
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            System.out.println("Search failed, please try again.");
-            System.out.println("--------------------------------");
-        }
-    }
-
-    /**
-     * print first reply to console
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
-     */
-    private int outFirst(ResultSet rs, int first_id) throws SQLException {
-        int cur_first_id = rs.getInt("first_id");
-        if (cur_first_id != first_id && rs.getString("first_author") != null) {// new first reply
-            first_id = cur_first_id;
-            System.out.println("[ first_id ]: " + rs.getInt("first_id"));
-            System.out.println("[ first_stars ]: " + rs.getInt("first_stars"));
-            System.out.println("[ first_author ]: " + rs.getString("first_author"));
-            System.out.println("[ first_content ]: " + rs.getString("first_content"));
-            System.out.println("----------------------------------------------------------------------------------");
-        }
-        return first_id;
-    }
-
-    /**
-     * print post to console
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
-     */
-    private int outPost(ResultSet rs, int cur_post_id) throws SQLException {
-        int post_id;
-        post_id = cur_post_id;
-        System.out.println("[ Post ID ]: " + rs.getInt("post_id"));
-        System.out.println("[ Title ]: " + rs.getString("title"));
-        System.out.println("[ Author ]: " + rs.getString("author_name"));
-        System.out.println("[ Content ]: " + rs.getString("content"));
-        System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
-        return post_id;
-    }
-
-    private void printPost(ResultSet rs) throws SQLException {
-        if (rs.next()) {// if there is result
-            rs.first();// roll back to the first one
-            int post_id = 0;
-            do {
-                int cur_post_id = rs.getInt("post_id");
-                if (cur_post_id != post_id) {// new post
-                    post_id = outPost(rs, cur_post_id);
-                    System.out.println("-------------------------------------------------------------------------------------------------------------------");
-                }
-
-            } while (rs.next());
-        } else {
-            System.out.println("No post are found.");
-            System.out.println("-------------------------------------------------------------------");
         }
     }
 

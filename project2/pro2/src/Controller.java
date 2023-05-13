@@ -6,7 +6,6 @@ public class Controller {
     private static Connection con;
     private static PreparedStatement stmt;
     private static Scanner in = new Scanner(System.in);
-    private static String user; // current user name
     private static int opcode; // current operation code
     private static boolean exitForum = false; // exit flag
     private static boolean exitUser = false; // exit user flag
@@ -20,13 +19,12 @@ public class Controller {
     static PostHandler postHandler;
 
 
-    public Controller(Connection con, PreparedStatement stmt) {
+    public Controller(Connection con) {
         Controller.con = con;
-        Controller.stmt = stmt;
         meHandler = new MeHandler(con, in);
         replyHandler = new ReplyHandler(con, in);
         browseHandler = new BrowseHandler(con, in);
-        accountHandler = new AccountHandler(con, user, in);
+        accountHandler = new AccountHandler(con, in);
         quadrantHandler = new QuadrantHandler(con, in);
         postHandler = new PostHandler(con, in);
 
