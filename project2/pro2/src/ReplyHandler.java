@@ -24,9 +24,13 @@ public class ReplyHandler {
         System.out.println("--------------------------------------------------------------");
         // current operation code
         int opcode = readNum();
+        System.out.println("Do you want to reply anonymously? [y/n]");
+        System.out.println("---------------------------------------");
+        String anonymous = in.next();
+        boolean isAnonymous = anonymous.equals("y");
         switch (opcode) {
-            case 1 -> replyPost();
-            case 2 -> replyReply();
+            case 1 -> replyPost(isAnonymous);
+            case 2 -> replyReply(isAnonymous);
             default -> {
                 System.out.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
@@ -34,7 +38,7 @@ public class ReplyHandler {
         }
     }
 
-    private void replyReply() {
+    private void replyReply(boolean isAnonymous) {
         System.out.println("Please enter the first_id you want to reply:");
         System.out.println("--------------------------------------------");
         int first_id = readNum();
@@ -44,16 +48,16 @@ public class ReplyHandler {
         String content = in.nextLine();
         try {
             String sql = "insert into second_replies (first_id, second_author, second_content,second_stars) values (?, ?, ?, 0);";
-            doReply(first_id, content, sql); // insert into second_replies
+            doReply(first_id, content, sql, isAnonymous); // insert into second_replies
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
-            System.out.println("Reply failed, please try again.");
+            System.err.println("Reply failed, please try again.");
             System.out.println("-------------------------------");
         }
 
     }
 
-    private void replyPost() {
+    private void replyPost(boolean isAnonymous) {
         System.out.println("Please enter the post_id you want to reply:");
         System.out.println("--------------------------------------------");
         int post_id = readNum();
@@ -63,18 +67,18 @@ public class ReplyHandler {
         String content = in.nextLine();
         try {
             String sql = "insert into first_replies (post_id, first_author, first_content,first_stars) values (?, ?, ?, 0);";
-            doReply(post_id, content, sql);// insert into first_replies
+            doReply(post_id, content, sql, isAnonymous);// insert into first_replies
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
-            System.out.println("Failed to reply.");
+            System.err.println("Failed to reply.");
             System.out.println("----------------");
         }
     }
 
-    private void doReply(int post_id, String content, String sql) throws SQLException {
+    private void doReply(int id, String content, String sql, boolean isAnonymous) throws SQLException {
         stmt = con.prepareStatement(sql);
-        stmt.setInt(1, post_id);
-        stmt.setString(2, AccountHandler.getUser());
+        stmt.setInt(1, id);
+        stmt.setString(2, isAnonymous ? "anonymous" : AccountHandler.getUser());
         stmt.setString(3, content);
         stmt.executeUpdate();
         System.out.println("Reply successfully!");

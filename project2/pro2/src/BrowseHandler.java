@@ -35,7 +35,7 @@ public class BrowseHandler {
             case 2 -> browsePost(2);
             case 3 -> browsePost(3);
             default -> {
-                System.out.println("Invalid, please input a valid number.");
+                System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
             }
         }
@@ -54,7 +54,7 @@ public class BrowseHandler {
         // check if the input is valid
         for (String code : codes) {
             if (!isNum(code)) {
-                System.out.println("Invalid, please input a valid number.");
+                System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 return;
             }
@@ -104,10 +104,10 @@ public class BrowseHandler {
         switch (opcode) {
             //functions in database, parameter is the username to find users been blocked
             case 1 -> sql = new StringBuilder("select * from get_posts(?) where 1=1");
-            case 2 -> sql = new StringBuilder("select * from get_first_replies(?) where 1=1");
-            case 3 -> sql = new StringBuilder("select * from get_second_replies(?) where 1=1");
+            case 2 -> sql = new StringBuilder("select * from get_posts_first_replies(?) where 1=1");
+            case 3 -> sql = new StringBuilder("select * from get_posts_second_replies(?) where 1=1");
             default -> {
-                System.out.println("Invalid, please input a valid number.");
+                System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 return;
             }
@@ -139,16 +139,32 @@ public class BrowseHandler {
                     params.add(values[i]);
                 }
                 case "6" -> { // reply_name
-                    sql.append(" and (first_author ilike ? or second_author ilike ?)");
-                    params.add(values[i]);
-                    params.add(values[i]);
+                    switch (opcode) {
+                        case 1 -> {
+                            System.err.println("just posts, cannot search by reply_name");
+                            System.out.println("-----------------------------------------");
+                            return;
+                        }
+                        case 2 -> {
+                            sql.append(" and first_author ilike ?");
+                            params.add(values[i]);
+                        }
+                        case 3 -> {
+                            sql.append(" and (first_author ilike ? or second_author ilike ?)");
+                            params.add(values[i]);
+                            params.add(values[i]);
+                        }
+                        default -> {
+                            // if just posts, ignore this parameter
+                        }
+                    }
                 }
                 case "7" -> { // post_id
                     sql.append(" and post_id = ?");
                     params.add(values[i]);
                 }
                 default -> { // invalid code
-                    System.out.println("Invalid parameter code, please try again.");
+                    System.err.println("Invalid parameter code, please try again.");
                     System.out.println("-----------------------------------------");
                     return;
                 }
@@ -172,13 +188,13 @@ public class BrowseHandler {
             switch (opcode) {
                 case 1 -> printer.printPost(rs);
                 case 2 -> printer.printFirstReply(rs);
-                case 3 -> printer.printSecondReply(rs);
+                case 3 -> printer.printSecondReply(rs,false);
                 default -> {
                 }
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Search failed, please try again.");
+            System.err.println("Search failed, please try again.");
             System.out.println("--------------------------------");
         }
     }
@@ -191,7 +207,7 @@ public class BrowseHandler {
     private int readNum() {
         String s = in.next();
         if (!isNum(s)) {
-            System.out.println("Invalid input, please input a number.");
+            System.err.println("Invalid input, please input a number.");
             System.out.println("-------------------------------------");
             return -1;
         }
@@ -216,7 +232,7 @@ public class BrowseHandler {
             printer.printFirstReply(rs);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Search failed, please try again.");
+            System.err.println("Search failed, please try again.");
             System.out.println("--------------------------------");
         }
     }
@@ -237,10 +253,10 @@ public class BrowseHandler {
             //left join to preserve first replies without second replies
             stmt.setInt(1, post_id);
             rs = stmt.executeQuery();
-            printer.printSecondReply(rs);
+            printer.printSecondReply(rs,false);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Search failed, please try again.");
+            System.err.println("Search failed, please try again.");
             System.out.println("--------------------------------");
         }
 

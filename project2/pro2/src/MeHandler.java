@@ -60,7 +60,7 @@ public class MeHandler {
             ResultSet rs = stmt.executeQuery();
             System.out.println("Your replies are:");
             System.out.println("-----------------");
-            printer.printSecondReply(rs);
+            printer.printSecondReply(rs, true);
         } catch (SQLException e) {
             System.err.println("" + e.getMessage());
         }

@@ -3,7 +3,8 @@ import java.sql.SQLException;
 
 public class Printer {
 
-    public void printSecondReply(ResultSet rs) {
+    public void printSecondReply(ResultSet rs, boolean isShowMe) {
+        // if isShowMe, then just print reply with my username
         try {
             int post_id = 0;
             int first_id = 0;
@@ -21,6 +22,14 @@ public class Printer {
                     int cur_second_id = rs.getInt("second_id");
                     if (cur_second_id != second_id && rs.getString("second_author") != null) {// new second reply
                         second_id = cur_second_id;
+                        if (isShowMe) {
+                            String user = AccountHandler.getUser();
+                            String first_author = rs.getString("first_author");
+                            String second_author = rs.getString("second_author");
+                            if (first_author != null && first_author.equals(user) && second_author != null && !second_author.equals(user))
+                                // if first_author is me and second_author is not me, do not print second reply
+                                continue;
+                        }
                         System.out.println("[ second reply id ]: " + rs.getInt("second_id"));
                         System.out.println("[ second content ]: " + rs.getString("second_content"));
                         System.out.println("[ second author ]: " + rs.getString("second_author"));

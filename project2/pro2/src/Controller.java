@@ -7,7 +7,7 @@ public class Controller {
     private static Scanner in = new Scanner(System.in);
     private static int opcode; // current operation code
 
-    static QuadrantHandler quadrantHandler;
+    static ActionHandler actionHandler;
     static AccountHandler accountHandler;
     static BrowseHandler browseHandler;
     static ReplyHandler replyHandler;
@@ -21,7 +21,7 @@ public class Controller {
         replyHandler = new ReplyHandler(con, in);
         browseHandler = new BrowseHandler(con, in);
         accountHandler = new AccountHandler(con, in);
-        quadrantHandler = new QuadrantHandler(con, in);
+        actionHandler = new ActionHandler(con, in);
         postHandler = new PostHandler(con, in);
 
     }
@@ -42,7 +42,6 @@ public class Controller {
         accountHandler.handleAccount(); // login/register/exit
     }
 
-
     public void prompt() {
         System.out.println("Select the operations you want, enter the corresponding number:");
         // try to be hierarchy.
@@ -59,7 +58,7 @@ public class Controller {
     public void respond() {
         switch (opcode) {
             case 1 -> browseHandler.handleBrowse();
-            case 2 -> quadrantHandler.handleQuadrant();
+            case 2 -> actionHandler.handleQuadrant();
             case 3 -> meHandler.handleMe();
             case 4 -> postHandler.handlePost();
             case 5 -> replyHandler.handleReply();

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class QuadrantHandler {
+public class ActionHandler {
     /**
      * 点赞、收藏、转发、关注、取关、屏蔽
      * 一键三连加关注!
@@ -16,14 +16,14 @@ public class QuadrantHandler {
     private static Scanner in;
     private static PreparedStatement stmt;
 
-    public QuadrantHandler(Connection con, Scanner in) {
-        QuadrantHandler.con = con;
-        QuadrantHandler.in = in;
+    public ActionHandler(Connection con, Scanner in) {
+        ActionHandler.con = con;
+        ActionHandler.in = in;
     }
 
     public void handleQuadrant() {
-        System.out.println("Operation: [1]like a post\t[2]favorite a post\t[3]share a post");
-        System.out.println("           [4]follow a user\t[5]unfollow a user\t[6]block a user\t[7]unblock a user");
+        System.out.println("Operation: post -> [1]like\t[2]favorite\t[3]share");
+        System.out.println("           user -> [4]follow\t[5]unfollow\t[6]block\t[7]unblock");
         // current operation code
         int opcode = readNum();
         switch (opcode) {
@@ -54,7 +54,7 @@ public class QuadrantHandler {
             System.out.println("You unblocked [ " + blockee + " ]");
             System.out.println("----------------------------------");
         } catch (SQLException e) {
-            System.out.println("[ " + blockee + " ] is not in your block list.");
+            System.err.println("[ " + blockee + " ] is not in your block list.");
             System.out.println("------------------------------------");
             System.err.println("" + e.getMessage());
         }
@@ -73,7 +73,7 @@ public class QuadrantHandler {
             System.out.println("You blocked [ " + blockee + " ]");
             System.out.println("----------------------------------");
         } catch (SQLException e) {
-            System.out.println("You have already blocked [ " + blockee + " ]");
+            System.err.println("You have already blocked [ " + blockee + " ]");
             System.out.println("----------------------------------");
             System.err.println("" + e.getMessage());
         }
@@ -83,7 +83,7 @@ public class QuadrantHandler {
         System.out.println("Please input the user name you want to follow:");
         String name = in.next();
         if (!nameIsIn(name)) {
-            System.out.println("User name not found, please input a valid user name.");
+            System.err.println("User name not found, please input a valid user name.");
             System.out.println("----------------------------------------------------");
             return;
         }
@@ -97,7 +97,7 @@ public class QuadrantHandler {
             System.out.println("--------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Follow failed, please try again.");
+            System.err.println("Follow failed, please try again.");
             System.out.println("--------------------------------");
         }
     }
@@ -106,7 +106,7 @@ public class QuadrantHandler {
         System.out.println("Please input the user name you want to unfollow:");
         String name = in.next();
         if (!nameIsIn(name)) {
-            System.out.println("User name not found, please input a valid user name.");
+            System.err.println("User name not found, please input a valid user name.");
             System.out.println("----------------------------------------------------");
             return;
         }
@@ -119,7 +119,7 @@ public class QuadrantHandler {
             System.out.println("----------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("You did not follow [ " + name + " ]!");
+            System.err.println("You did not follow [ " + name + " ]!");
             System.out.println("----------------------------------");
         }
     }
@@ -142,7 +142,7 @@ public class QuadrantHandler {
             System.out.println("-------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Share failed, please try again.");
+            System.err.println("Share failed, please try again.");
             System.out.println("-------------------------------");
         }
     }
@@ -165,7 +165,7 @@ public class QuadrantHandler {
             System.out.println("----------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Favorite failed, please try again.");
+            System.err.println("Favorite failed, please try again.");
             System.out.println("----------------------------------");
         }
 
@@ -189,7 +189,7 @@ public class QuadrantHandler {
             System.out.println("------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.out.println("Like failed, please try again.");
+            System.err.println("Like failed, please try again.");
             System.out.println("------------------------------");
         }
     }
@@ -202,7 +202,8 @@ public class QuadrantHandler {
             if (rs.next()) return true;// post is in
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("Query statement failed");
+            System.err.println("The post does not exist.");
+            System.out.println("------------------------");
         }
         return false;
     }
