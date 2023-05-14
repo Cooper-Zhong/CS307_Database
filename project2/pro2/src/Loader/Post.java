@@ -1,4 +1,4 @@
-package loader;
+package Loader;
 
 import java.sql.Timestamp;
 import java.util.List;

@@ -1,9 +1,10 @@
+package Handler;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -15,9 +16,10 @@ public class BrowseHandler {
      * 3. browse second replies
      */
     private static Connection con;
-    private static PreparedStatement stmt;
     private static Scanner in;
-    private static Printer printer;//print the result of posts
+    private PreparedStatement stmt;
+    private Printer printer;//print the result of posts
+    private ResultSet rs;
 
     public BrowseHandler(Connection con, Scanner in) {
         BrowseHandler.con = con;
@@ -31,13 +33,20 @@ public class BrowseHandler {
         // current operation code
         int opcode = readNum();
         switch (opcode) {
-            case 1 -> browsePost(1);
-            case 2 -> browsePost(2);
-            case 3 -> browsePost(3);
-            default -> {
+            case 1:
+                browsePost(1);
+                break;
+            case 2:
+                browsePost(2);
+                break;
+            case 3:
+                browsePost(3);
+                break;
+            default:
                 System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
-            }
+                break;
+
         }
     }
 
@@ -61,7 +70,7 @@ public class BrowseHandler {
         //order by the content's frequency, show top 20.
         try {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The top 20 hot search list:");
             System.out.println("---------------------------");
             if (rs.next()) {
@@ -117,104 +126,98 @@ public class BrowseHandler {
      * @param opcode 1 print posts, 2 print first replies, 3 print second replies
      */
     public void multiSearch(String[] codes, String[] values, int opcode) {
-        //get blocked user
-//        String blocked = "select blocked_author from block where author = ?";
-//        try {
-//            stmt = con.prepareStatement(blocked, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-//            stmt.setString(1, AccountHandler.getUser());
-//            ResultSet rs = stmt.executeQuery();
-//            HashSet<String> blockedUsers = new HashSet<>();
-//            if (rs.next()) {
-//                rs.first();
-//                do {
-//                    blockedUsers.add(rs.getString("blocked_author"));
-//                } while (rs.next());
-//            }
-//        } catch (SQLException e) {
-//            System.err.println(e.getMessage());
-//            return;
-//        }
         //multi-value search
         StringBuilder sql;
         ArrayList<String> params = new ArrayList<>();
         switch (opcode) {
             //functions in database, parameter is the username to find users been blocked
-            case 1 -> sql = new StringBuilder("select * from get_posts(?) where 1=1");
-            case 2 -> sql = new StringBuilder("select * from get_posts_first_replies(?) where 1=1");
-            case 3 -> sql = new StringBuilder("select * from get_posts_second_replies(?) where 1=1");
-            default -> {
+            case 1:
+                sql = new StringBuilder("select * from get_posts(?) where 1=1");
+                break;
+            case 2:
+                sql = new StringBuilder("select * from get_posts_first_replies(?) where 1=1");
+                break;
+            case 3:
+                sql = new StringBuilder("select * from get_posts_second_replies(?) where 1=1");
+                break;
+            default:
                 System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 return;
-            }
+
             //use left join to preserve posts without replies
         }
         params.add(AccountHandler.getUser());
         for (int i = 0; i < codes.length; i++) {
             switch (codes[i]) {
-                case "1" -> {// author_name
+                case "1": // author_name
                     sql.append(" and author_name ilike ?");
                     addHotSearchList(values[i]);
                     params.add(values[i]);
-                }
-                case "2" -> { // keyword
+                    break;
+                case "2":  // keyword
                     sql.append(" and (content ilike ? or title ilike ?)");
                     String t = "%" + values[i] + "%";
                     addHotSearchList(values[i]);
                     params.add(t);
                     params.add(t);
-                }
-                case "3" -> { // category
+                    break;
+                case "3": // category
                     sql.append(" and category_name = ?");
                     addHotSearchList(values[i]);
                     params.add(values[i]);
-                }
-                case "4" -> { // from_time
+                    break;
+                case "4": // from_time
                     sql.append(" and post_time >= to_date(?,'yyyy-mm-dd')");
                     params.add(values[i]);
-                }
-                case "5" -> { // to_time
+                    break;
+                case "5":  // to_time
                     sql.append(" and post_time <= to_date(?,'yyyy-mm-dd')");
                     params.add(values[i]);
-                }
-                case "6" -> { // reply_name
+                    break;
+                case "6": { // reply_name
                     switch (opcode) {
-                        case 1 -> {
+                        case 1:
                             System.err.println("just posts, cannot search by reply_name");
                             System.out.println("-----------------------------------------");
                             return;
-                        }
-                        case 2 -> {
+                        case 2:
                             sql.append(" and first_author ilike ?");
                             params.add(values[i]);
-                        }
-                        case 3 -> {
+                            break;
+                        case 3:
                             sql.append(" and (first_author ilike ? or second_author ilike ?)");
                             params.add(values[i]);
                             params.add(values[i]);
-                        }
-                        default -> {
+                            break;
+                        default:
                             // if just posts, ignore this parameter
-                        }
+                            break;
                     }
+                    break;
                 }
-                case "7" -> { // post_id
+                case "7":  // post_id
                     sql.append(" and post_id = ?");
                     params.add(values[i]);
-                }
-                default -> { // invalid code
+                    break;
+                default:  // invalid code
                     System.err.println("Invalid parameter code, please try again.");
                     System.out.println("-----------------------------------------");
                     return;
-                }
             }
         }
         switch (opcode) {
-            case 1 -> sql.append(" order by post_id;");
-            case 2 -> sql.append(" order by post_id, first_id;");
-            case 3 -> sql.append(" order by post_id, first_id, second_id;");
-            default -> {
-            }
+            case 1:
+                sql.append(" order by post_id;");
+                break;
+            case 2:
+                sql.append(" order by post_id, first_id;");
+                break;
+            case 3:
+                sql.append(" order by post_id, first_id, second_id;");
+                break;
+            default:
+                break;
         }
         try {
             System.out.println(sql);
@@ -223,19 +226,27 @@ public class BrowseHandler {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setString(i + 1, params.get(i));
             }
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             switch (opcode) {
-                case 1 -> printer.printPost(rs);
-                case 2 -> printer.printFirstReply(rs);
-                case 3 -> printer.printSecondReply(rs, false);
-                default -> {
-                }
+                case 1:
+                    printer.printPost(rs);
+                    break;
+                case 2:
+                    printer.printFirstReply(rs);
+                    break;
+                case 3:
+                    printer.printSecondReply(rs, false);
+                    break;
+                default:
+                    break;
             }
-        } catch (SQLException e) {
+        } catch (
+                SQLException e) {
             System.err.println(e.getMessage());
             System.err.println("Search failed, please try again.");
             System.out.println("--------------------------------");
         }
+
     }
 
     private boolean isNum(String s) {
@@ -299,5 +310,14 @@ public class BrowseHandler {
             System.out.println("--------------------------------");
         }
 
+    }
+
+    public void close() {
+        try {
+            if (stmt != null) stmt.close();
+            if (rs != null) rs.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

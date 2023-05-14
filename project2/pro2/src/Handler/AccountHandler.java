@@ -1,3 +1,5 @@
+package Handler;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,10 +14,11 @@ public class AccountHandler {
      * 2. register
      */
     private static Connection con;
-    private static PreparedStatement stmt;
     private static Scanner in;
-
     private static String user; // current user name
+    private PreparedStatement stmt;
+
+    private ResultSet rs;
 
     public static String getUser() {
         return user;
@@ -33,18 +36,23 @@ public class AccountHandler {
             System.out.println("---------------------------------------");
             int opcode = readNum();
             switch (opcode) {
-                case 1 -> login();
-                case 2 -> register();
-                case 3 -> {
+                case 1:
+                    login();
+                    break;
+                case 2:
+                    register();
+                    break;
+                case 3:
                     System.out.println("Bye!");
                     System.exit(0);
-                }
-                default -> {
+                default:
                     System.out.println("Invalid, please input a valid number.");
                     System.out.println("-------------------------------------");
-                }
+                    break;
             }
+
         }
+
     }
 
     public void logout() {
@@ -110,7 +118,7 @@ public class AccountHandler {
         try {
             stmt = con.prepareStatement("select * from authors where author_name = ?;");
             stmt.setString(1, name);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             if (rs.next()) return true;// name is in
         } catch (SQLException e) {
             System.err.println("Query statement failed");
@@ -134,5 +142,14 @@ public class AccountHandler {
         return Integer.parseInt(s);
     }
 
+    public void close() {
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println("Close failed");
+            System.err.println(e.getMessage());
+        }
+    }
 
 }

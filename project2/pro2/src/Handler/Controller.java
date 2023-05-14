@@ -1,3 +1,7 @@
+package Handler;
+
+import ConnectionUtil.DBUtil;
+
 import java.sql.*;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -5,7 +9,8 @@ import java.util.regex.Pattern;
 public class Controller {
     private static Connection con;
     private static Scanner in = new Scanner(System.in);
-    private static int opcode; // current operation code
+    private int opcode; // current operation code
+    private DBUtil util;
 
     static ActionHandler actionHandler;
     static AccountHandler accountHandler;
@@ -15,15 +20,35 @@ public class Controller {
     static PostHandler postHandler;
 
 
-    public Controller(Connection con) {
-        Controller.con = con;
+    public Controller(DBUtil util) {
+        this.util = util;
+    }
+
+    public void getConnection() {
+        con = this.util.getConnection();
+        System.out.println("------Thread " + Thread.currentThread().getId() + " visiting DB!------");
+        System.out.println(this.util.getConnectState());
         meHandler = new MeHandler(con, in);
         replyHandler = new ReplyHandler(con, in);
         browseHandler = new BrowseHandler(con, in);
         accountHandler = new AccountHandler(con, in);
         actionHandler = new ActionHandler(con, in);
         postHandler = new PostHandler(con, in);
+    }
 
+    public void closeConnection() {
+        this.util.closeConnection(con);
+        closeAll();
+        System.out.println("------Thread " + Thread.currentThread().getId() + " close DB!------");
+    }
+
+    public void closeAll() {
+        accountHandler.close();
+        actionHandler.close();
+        browseHandler.close();
+        replyHandler.close();
+        meHandler.close();
+        postHandler.close();
     }
 
     public void handle() {
@@ -58,14 +83,30 @@ public class Controller {
 
     public void respond() {
         switch (opcode) {
-            case 1 -> browseHandler.handleBrowse();
-            case 2 -> actionHandler.handleQuadrant();
-            case 3 -> meHandler.handleMe();
-            case 4 -> postHandler.handlePost();
-            case 5 -> replyHandler.handleReply();
-            case 6 -> browseHandler.showHotSearchList();
-            case 7 -> accountHandler.logout();
-            default -> System.out.println("Invalid input, please try again.");
+            case 1:
+                browseHandler.handleBrowse();
+                break;
+            case 2:
+                actionHandler.handleQuadrant();
+                break;
+            case 3:
+                meHandler.handleMe();
+                break;
+            case 4:
+                postHandler.handlePost();
+                break;
+            case 5:
+                replyHandler.handleReply();
+                break;
+            case 6:
+                browseHandler.showHotSearchList();
+                break;
+            case 7:
+                accountHandler.logout();
+                break;
+            default:
+                System.out.println("Invalid input, please try again.");
+                break;
         }
     }
 

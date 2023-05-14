@@ -1,3 +1,5 @@
+package Handler;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,8 +13,9 @@ public class ReplyHandler {
      * 2. reply a reply
      */
     private static Connection con;
-    private static PreparedStatement stmt;
     private static Scanner in;
+    private PreparedStatement stmt;
+
 
     public ReplyHandler(Connection con, Scanner in) {
         ReplyHandler.con = con;
@@ -29,14 +32,19 @@ public class ReplyHandler {
         String anonymous = in.next();
         boolean isAnonymous = anonymous.equals("y");
         switch (opcode) {
-            case 1 -> replyPost(isAnonymous);
-            case 2 -> replyReply(isAnonymous);
-            default -> {
+            case 1:
+                replyPost(isAnonymous);
+                break;
+            case 2:
+                replyReply(isAnonymous);
+                break;
+            default:
                 System.out.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
-            }
+                break;
         }
     }
+
 
     private void replyReply(boolean isAnonymous) {
         System.out.println("Please enter the first_id you want to reply:");
@@ -98,5 +106,14 @@ public class ReplyHandler {
     private boolean isNum(String s) {
         Pattern pattern = Pattern.compile("^[-\\+]?\\d*$"); // match integers
         return pattern.matcher(s).matches();
+    }
+
+    public void close() {
+        try {
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println("Close failed");
+            System.err.println(e.getMessage());
+        }
     }
 }

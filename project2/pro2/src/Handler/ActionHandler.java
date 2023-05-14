@@ -1,3 +1,5 @@
+package Handler;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +16,9 @@ public class ActionHandler {
 
     private static Connection con;
     private static Scanner in;
-    private static PreparedStatement stmt;
+    private  PreparedStatement stmt;
+
+    private ResultSet rs;
 
     public ActionHandler(Connection con, Scanner in) {
         ActionHandler.con = con;
@@ -27,17 +31,33 @@ public class ActionHandler {
         // current operation code
         int opcode = readNum();
         switch (opcode) {
-            case 1 -> likePost1();
-            case 2 -> favoritePost2();
-            case 3 -> sharePost3();
-            case 4 -> followUser();
-            case 5 -> unfollowUser();
-            case 6 -> blockUser();
-            case 7 -> unblockUser();
-            default -> {
+            case 1:
+                likePost();
+                break;
+            case 2:
+                favoritePost();
+                break;
+            case 3:
+                sharePost();
+                break;
+            case 4:
+                followUser();
+                break;
+            case 5:
+                unfollowUser();
+                break;
+            case 6:
+                blockUser();
+                break;
+            case 7:
+                unblockUser();
+                break;
+
+            default:
                 System.out.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
-            }
+                break;
+
         }
     }
 
@@ -124,7 +144,7 @@ public class ActionHandler {
         }
     }
 
-    private void sharePost3() {
+    private void sharePost() {
         System.out.println("Please input the post ID you share:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -147,7 +167,7 @@ public class ActionHandler {
         }
     }
 
-    private void favoritePost2() {
+    private void favoritePost() {
         System.out.println("Please input the post ID you favorite:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -171,7 +191,7 @@ public class ActionHandler {
 
     }
 
-    public void likePost1() {
+    public void likePost() {
         System.out.println("Please input the post ID you like:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -198,7 +218,7 @@ public class ActionHandler {
         try {
             stmt = con.prepareStatement("select * from posts where post_id = ?;");
             stmt.setInt(1, pid);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             if (rs.next()) return true;// post is in
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -212,7 +232,7 @@ public class ActionHandler {
         try {
             stmt = con.prepareStatement("select * from authors where author_name = ?;");
             stmt.setString(1, name);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             if (rs.next()) return true;// name is in
         } catch (SQLException e) {
             System.err.println("Query statement failed");
@@ -234,6 +254,15 @@ public class ActionHandler {
             return -1;
         }
         return Integer.parseInt(s);
+    }
+
+    public void close() {
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
 }

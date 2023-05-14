@@ -1,25 +1,41 @@
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import ConnectionUtil.ConnectHandler;
+import ConnectionUtil.OrdinaryUtil;
+import ConnectionUtil.ProxoolUtil;
+import Handler.Controller;
+
 import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 
 
 public class Main {
 
     public static void main(String[] args) {
-        ConnectHandler conHandler = new ConnectHandler();
-        // load user info from file
-        Properties prop = conHandler.loadGaussUser();
-        // connect to openGauss
-        conHandler.openGauss(prop);
-        // get connection
-        Connection con = conHandler.getCon();
-        // create controller
-        Controller controller = new Controller(con);
-        controller.handle();
-        // close connection
-        conHandler.closeDB();
+        try {
+            dbRequestArrived(1);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public static void dbRequestArrived(int count) {
+        for (int i = 0; i < count; i++) {
+            new Thread(() -> {
+                // create a new controller
+                Controller controller = new Controller(ProxoolUtil.getInstance());
+                // get connection
+                controller.getConnection();
+                // handle request
+                controller.handle();
+                // close connection
+                controller.closeConnection();
+            }).start();
+        }
     }
 }

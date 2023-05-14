@@ -1,4 +1,5 @@
-package loader;
+/*
+package Loader;
 
 import com.alibaba.fastjson.JSON;
 
@@ -110,6 +111,11 @@ public class Pro2LoaderGauss {
         }
     }
 
+    */
+/**
+     * use higher jdk !!!
+     *//*
+
     private static void loadPostsFile() {
         try {
             String jsonStrings = Files.readString(Path.of("resources/posts.json"));
@@ -181,9 +187,11 @@ public class Pro2LoaderGauss {
         }
     }
 
-    /**
+    */
+/**
      * clear data in table before import each time, to compare the speed of different import methods.
-     */
+     *//*
+
     public static void clearDataInTable() {
         Statement stmt0;
         if (con != null) {
@@ -329,11 +337,13 @@ public class Pro2LoaderGauss {
         }
     }
 
-    /**
+    */
+/**
      * Process one post/reply object
      *
      * @param post
-     */
+     *//*
+
     private static void loadPost(Post post) {
         //access info through getter method.
         int postID = post.getPostID();
@@ -504,3 +514,4 @@ public class Pro2LoaderGauss {
         }
     }
 }
+*/

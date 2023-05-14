@@ -1,4 +1,4 @@
-package loader;
+package Loader;
 
 public class Replies {
     private int postID;

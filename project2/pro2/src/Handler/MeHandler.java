@@ -1,3 +1,5 @@
+package Handler;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,9 +17,11 @@ public class MeHandler {
      * 4. show following list
      */
     private static Connection con;
-    private static PreparedStatement stmt;
     private static Scanner in;
-    private static Printer printer;//print the result of posts
+    private PreparedStatement stmt;
+    private Printer printer;//print the result of posts
+
+    private ResultSet rs;
 
     public MeHandler(Connection con, Scanner in) {
         MeHandler.con = con;
@@ -33,18 +37,29 @@ public class MeHandler {
         // current operation code
         int opcode = readNum();
         switch (opcode) {
-            case 1 -> showLikedPosts1();
-            case 2 -> showFavoritePosts2();
-            case 3 -> showSharedPosts3();
-            case 4 -> showFollowingList4();
-            case 5 -> viewMyPosts5();
-            case 6 -> viewMyReplies6();
-            default -> {
+            case 1:
+                showLikedPosts1();
+                break;
+            case 2:
+                showFavoritePosts2();
+                break;
+            case 3:
+                showSharedPosts3();
+                break;
+            case 4:
+                showFollowingList4();
+                break;
+            case 5:
+                viewMyPosts5();
+                break;
+            case 6:
+                viewMyReplies6();
+                break;
+            default:
                 System.out.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
-            }
+                break;
         }
-
     }
 
 
@@ -57,7 +72,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("Your replies are:");
             System.out.println("-----------------");
             printer.printSecondReply(rs, true);
@@ -72,7 +87,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The posts you posted are:");
             System.out.println("-------------------------");
             printer.printPost(rs);
@@ -87,7 +102,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The users you followed are:");
             int cnt = 0;
             if (rs.next()) {// if there is result
@@ -112,7 +127,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The posts you shared are:");
             System.out.println("-------------------------");
             printer.printPost(rs);
@@ -129,7 +144,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The posts you favorite are:");
             System.out.println("---------------------------");
             printer.printPost(rs);
@@ -146,7 +161,7 @@ public class MeHandler {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, AccountHandler.getUser());
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
             System.out.println("The posts you liked are:");
             System.out.println("------------------------");
             printer.printPost(rs);
@@ -171,5 +186,12 @@ public class MeHandler {
         return Integer.parseInt(s);
     }
 
-
+    public void close() {
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println("" + e.getMessage());
+        }
+    }
 }
