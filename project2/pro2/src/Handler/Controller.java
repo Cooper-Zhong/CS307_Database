@@ -81,7 +81,7 @@ public class Controller {
         opcode = readNum(); // read operation code
     }
 
-    public void respond() {
+    public void respond()   {
         switch (opcode) {
             case 1:
                 browseHandler.handleBrowse();

@@ -54,7 +54,7 @@ public class ActionHandler {
                 break;
 
             default:
-                System.out.println("Invalid, please input a valid number.");
+                System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 break;
 

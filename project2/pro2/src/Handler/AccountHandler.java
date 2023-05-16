@@ -81,7 +81,7 @@ public class AccountHandler {
         System.out.println("Please create an user name:");
         String name = in.next();
         if (nameIsIn(name)) {
-            System.out.println("User name already exists, please choose another one.");
+            System.err.println("User name already exists, please choose another one.");
             System.out.println("----------------------------------------------------");
             return;
         }

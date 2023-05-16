@@ -20,13 +20,14 @@ public class Printer {
                     if (cur_post_id != post_id) {// new post
                         post_id = outPost(rs, cur_post_id);
                         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------");
+                        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------");
                     }//then print first reply
                     first_id = outFirst(rs, first_id);
                     //then print second reply
                     int cur_second_id = rs.getInt("second_id");
                     if (cur_second_id != second_id && rs.getString("second_author") != null) {// new second reply
                         second_id = cur_second_id;
-                        if (isShowMe) {
+                        if (isShowMe) { // just print reply with my username
                             String user = AccountHandler.getUser();
                             String first_author = rs.getString("first_author");
                             String second_author = rs.getString("second_author");
@@ -37,6 +38,8 @@ public class Printer {
                         System.out.println("[ second reply id ]: " + rs.getInt("second_id"));
                         System.out.println("[ second content ]: " + rs.getString("second_content"));
                         System.out.println("[ second author ]: " + rs.getString("second_author"));
+                        System.out.println("[ second stars ]: " + rs.getInt("second_stars"));
+                        System.out.println("----------------------------------------");
                         System.out.println("----------------------------------------");
                     }
                 } while (rs.next());
@@ -87,6 +90,7 @@ public class Printer {
             System.out.println("[ first_author ]: " + rs.getString("first_author"));
             System.out.println("[ first_content ]: " + rs.getString("first_content"));
             System.out.println("--------------------------------------------------------------------------------------");
+            System.out.println("--------------------------------------------------------------------------------------");
         }
         return first_id;
     }
@@ -102,6 +106,7 @@ public class Printer {
         System.out.println("[ Author ]: " + rs.getString("author_name"));
         System.out.println("[ Content ]: " + rs.getString("content"));
         System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
+        System.out.println("[ Post city ]: " + rs.getString("post_city"));
         return post_id;
     }
 
@@ -113,6 +118,7 @@ public class Printer {
                 int cur_post_id = rs.getInt("post_id");
                 if (cur_post_id != post_id) {// new post
                     post_id = outPost(rs, cur_post_id);
+                    System.out.println("----------------------------------------------------------------------------------------------------------------------");
                     System.out.println("----------------------------------------------------------------------------------------------------------------------");
                 }
 

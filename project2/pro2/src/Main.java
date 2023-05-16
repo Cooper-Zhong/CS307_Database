@@ -14,11 +14,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             dbRequestArrived(1);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }

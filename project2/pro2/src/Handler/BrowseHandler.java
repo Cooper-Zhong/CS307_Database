@@ -53,20 +53,19 @@ public class BrowseHandler {
     /**
      * called when a user search for a keyword/author/category
      */
-    private void addHotSearchList(String searchContent) {
-        String sql = "insert into hot_search_list (search_content) values (?)";
+    private void update_hot_search_list(String searchContent) {
+        String sql = "select * from update_hot_search_list(?);";
         try {
             stmt = con.prepareStatement(sql);
             stmt.setString(1, searchContent);
-            stmt.executeUpdate();
+            stmt.executeQuery();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
     public void showHotSearchList() {
-        String sql = " select search_content, count(search_content) as frequency " +
-                "from hot_search_list group by search_content order by frequency desc limit 20";
+        String sql = "select * from get_hot_search_list;";
         //order by the content's frequency, show top 20.
         try {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -81,6 +80,7 @@ public class BrowseHandler {
                     System.out.printf("%-5d\t%-10s\t%-10d\n", rank++, rs.getString("search_content"), rs.getInt("frequency"));
                 } while (rs.next());
             } else System.out.println("No history.");
+            System.out.println("------------------------------");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -152,19 +152,19 @@ public class BrowseHandler {
             switch (codes[i]) {
                 case "1": // author_name
                     sql.append(" and author_name ilike ?");
-                    addHotSearchList(values[i]);
+                    update_hot_search_list(values[i]);
                     params.add(values[i]);
                     break;
                 case "2":  // keyword
                     sql.append(" and (content ilike ? or title ilike ?)");
                     String t = "%" + values[i] + "%";
-                    addHotSearchList(values[i]);
+                    update_hot_search_list(values[i]);
                     params.add(t);
                     params.add(t);
                     break;
                 case "3": // category
                     sql.append(" and category_name = ?");
-                    addHotSearchList(values[i]);
+                    update_hot_search_list(values[i]);
                     params.add(values[i]);
                     break;
                 case "4": // from_time

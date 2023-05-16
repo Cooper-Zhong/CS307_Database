@@ -14,6 +14,7 @@ Anything outside the "proxool" tag is ignored. -->
         </driver-properties>
         <minimum-connection-count>5</minimum-connection-count>
         <maximum-connection-count>10</maximum-connection-count>
+        <maximum-active-time>900000</maximum-active-time>
         <alias>openGauss</alias>
         <driver-url>jdbc:postgresql://10.211.55.6:7654/pro2</driver-url>
         <driver-class>org.postgresql.Driver</driver-class>
@@ -23,5 +24,6 @@ Anything outside the "proxool" tag is ignored. -->
         </driver-properties>
         <minimum-connection-count>5</minimum-connection-count>
         <maximum-connection-count>10</maximum-connection-count>
+        <maximum-active-time>900000</maximum-active-time>
     </proxool>
 </something-else-entirely>
