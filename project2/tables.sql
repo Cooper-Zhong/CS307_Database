@@ -30,11 +30,10 @@ create table categories
 -- Table 3: post_category (Relationship set)
 create table post_category
 (
-    post_id       INTEGER references posts (post_id)         not null,
-    category_name text references categories (category_name) not null,
+    post_id       INTEGER references posts (post_id) on delete cascade         not null,
+    category_name text references categories (category_name) on delete cascade not null,
     primary key (post_id, category_name)
 );
-
 
 -- Table 5: author_follow (Relationship set)
 create table author_follow
@@ -74,22 +73,22 @@ create table author_liked_posts
 -- Table 9: first_replies (Entity set)
 create table first_replies
 (
-    post_id       INTEGER references posts (post_id)       not null,
+    post_id       INTEGER references posts (post_id) on delete cascade not null,
     first_id      SERIAL primary key,
-    first_content text                                     not null,
+    first_content text                                                 not null,
     first_stars   INTEGER,
-    first_author  INTEGER references authors (author_name) not null,
+    first_author  INTEGER references authors (author_name)             not null,
     unique (post_id, first_content, first_stars, first_author)
 );
 
 -- Table 10: sub_replies (Entity set)
 create table second_replies
 (
-    first_id       INTEGER references first_replies (first_id) not null,
+    first_id       INTEGER references first_replies (first_id) on delete cascade not null,
     second_id      SERIAL primary key,
-    second_content text                                        not null,
+    second_content text                                                          not null,
     second_stars   INTEGER,
-    second_author  text references authors (author_name)       not null
+    second_author  text references authors (author_name)                         not null
 );
 ---------------------------- New Tables ----------------------------
 
@@ -101,8 +100,14 @@ create table block_user
     blocked_author text not null references authors (author_name),
     primary key (author, blocked_author)
 );
-select *
-from posts
-order by post_id desc;
------------------------------- tables ------------------------------
+
+-- Table 12 hotSearchList (Entity set)
+create table hot_search_list
+(
+    hot_search_id  SERIAL primary key,
+    search_content text unique not null,
+    frequency      INTEGER
+);
+--------------------------- --- tables ------------------------------
+
 
