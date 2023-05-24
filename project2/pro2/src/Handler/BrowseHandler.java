@@ -46,7 +46,6 @@ public class BrowseHandler {
                 System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 break;
-
         }
     }
 
@@ -144,7 +143,6 @@ public class BrowseHandler {
                 System.err.println("Invalid, please input a valid number.");
                 System.out.println("-------------------------------------");
                 return;
-
             //use left join to preserve posts without replies
         }
         params.add(AccountHandler.getUser());
@@ -163,7 +161,7 @@ public class BrowseHandler {
                     params.add(t);
                     break;
                 case "3": // category
-                    sql.append(" and category_name = ?");
+                    sql.append(" and category_name ilike ?");
                     update_hot_search_list(values[i]);
                     params.add(values[i]);
                     break;
@@ -220,7 +218,7 @@ public class BrowseHandler {
                 break;
         }
         try {
-            System.out.println(sql);
+//            System.out.println(sql);
             stmt = con.prepareStatement(sql.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);// enable rolling
             for (int i = 0; i < params.size(); i++) {

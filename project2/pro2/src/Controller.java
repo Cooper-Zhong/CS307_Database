@@ -1,6 +1,5 @@
-package Handler;
-
 import ConnectionUtil.DBUtil;
+import Handler.*;
 
 import java.sql.*;
 import java.util.Scanner;

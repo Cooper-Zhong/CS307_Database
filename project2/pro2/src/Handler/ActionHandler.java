@@ -10,24 +10,27 @@ import java.util.regex.Pattern;
 public class ActionHandler {
     /**
      * 点赞、收藏、转发、关注、取关、屏蔽
-     * 一键三连加关注!
+     * 一键三连加关注
      * 1.like 2.favorite 3.share 4.follow
      */
 
     private static Connection con;
     private static Scanner in;
-    private  PreparedStatement stmt;
+    private PreparedStatement stmt;
+    private Printer printer;//print the result of posts
 
     private ResultSet rs;
 
     public ActionHandler(Connection con, Scanner in) {
         ActionHandler.con = con;
         ActionHandler.in = in;
+        printer = new Printer();
+
     }
 
     public void handleQuadrant() {
-        System.out.println("Operation: post -> [1]like\t[2]favorite\t[3]share");
-        System.out.println("           user -> [4]follow\t[5]unfollow\t[6]block\t[7]unblock");
+        System.out.println("Operation: post -> [1]like\t\t[2]favorite\t\t[3]share\t[4]一键三连");
+        System.out.println("           user -> [5]follow\t[6]unfollow\t\t[7]block\t[8]unblock");
         // current operation code
         int opcode = readNum();
         switch (opcode) {
@@ -41,15 +44,18 @@ public class ActionHandler {
                 sharePost();
                 break;
             case 4:
-                followUser();
+                threeInOne();
                 break;
             case 5:
-                unfollowUser();
+                followUser();
                 break;
             case 6:
-                blockUser();
+                unfollowUser();
                 break;
             case 7:
+                blockUser();
+                break;
+            case 8:
                 unblockUser();
                 break;
 
@@ -71,12 +77,12 @@ public class ActionHandler {
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, blockee);
             stmt.executeUpdate();
-            System.out.println("You unblocked [ " + blockee + " ]");
+            System.out.println("You unblocked [ "+blockee+" ]");
             System.out.println("----------------------------------");
         } catch (SQLException e) {
-            System.err.println("[ " + blockee + " ] is not in your block list.");
+            System.err.println("[ "+blockee+" ] is not in your block list.");
             System.out.println("------------------------------------");
-            System.err.println("" + e.getMessage());
+            System.err.println(""+e.getMessage());
         }
     }
 
@@ -90,12 +96,12 @@ public class ActionHandler {
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, blockee);
             stmt.executeUpdate();
-            System.out.println("You blocked [ " + blockee + " ]");
+            System.out.println("You blocked [ "+blockee+" ]");
             System.out.println("----------------------------------");
         } catch (SQLException e) {
-            System.err.println("You have already blocked [ " + blockee + " ]");
+            System.err.println("You have already blocked [ "+blockee+" ]");
             System.out.println("----------------------------------");
-            System.err.println("" + e.getMessage());
+            System.err.println(""+e.getMessage());
         }
     }
 
@@ -108,16 +114,16 @@ public class ActionHandler {
             return;
         }
         try {
-            stmt = con.prepareStatement("insert into author_follow(author_name, followed_name)" +
+            stmt = con.prepareStatement("insert into author_follow(author_name, followed_name)"+
                     "values (?, ?);");
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, name);
             stmt.executeUpdate();
-            System.out.println("Follow successfully!");
-            System.out.println("--------------------");
+            System.out.println("You followed [ "+name+" ] successfully!");
+            System.out.println("----------------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("Follow failed, please try again.");
+            System.err.println("You have already followed [ "+name+" ]!");
             System.out.println("--------------------------------");
         }
     }
@@ -135,12 +141,49 @@ public class ActionHandler {
             stmt.setString(1, AccountHandler.getUser());
             stmt.setString(2, name);
             stmt.executeUpdate();
-            System.out.println("Unfollow successfully!");
+            System.out.println("You unfollowed [ "+name+" ]");
             System.out.println("----------------------");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("You did not follow [ " + name + " ]!");
+            System.err.println("You did not follow [ "+name+" ]!");
             System.out.println("----------------------------------");
+        }
+    }
+
+    private void postFeedback(int pid) {
+        String sql = "select * from posts where post_id = ?";
+        try {
+            stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            stmt.setInt(1, pid);
+            rs = stmt.executeQuery();
+            printer.printPost(rs);
+        } catch (SQLException e) {
+            System.err.println("You have already liked post [ "+pid+" ]");
+            System.out.println("------------------------------------------");
+            System.err.println(""+e.getMessage());
+        }
+    }
+
+    private void threeInOne() {
+        System.out.println("Please input the post id you want to 三连:");
+        int pid = readNum();
+        if (!postIsIn(pid)) {
+            System.err.println("Post id not found, please input a valid post id.");
+            System.out.println("-----------------------------------------------");
+            return;
+        }
+        try {
+            String sql = "select three_in_one(?,?);";
+            stmt = con.prepareStatement(sql);
+            stmt.setInt(1, pid);
+            stmt.setString(2, AccountHandler.getUser());
+            stmt.executeQuery();
+            System.out.println("You 成功三连 post [ "+pid+" ]");
+            postFeedback(pid);
+        } catch (SQLException e) {
+            System.err.println("Failed to 三连 post [ "+pid+" ]");
+            System.out.println("----------------------------------");
+            System.err.println(""+e.getMessage());
         }
     }
 
@@ -148,21 +191,21 @@ public class ActionHandler {
         System.out.println("Please input the post ID you share:");
         int pid = readNum();
         if (!postIsIn(pid)) {
-            System.out.println("loader.Post not found, please input a valid post ID.");
+            System.out.println("Post not found, please input a valid post ID.");
             System.out.println("----------------------------------------------------");
             return;
         }
         try {
-            stmt = con.prepareStatement("insert into author_shared_posts(post_id, shared_author_name)" +
+            stmt = con.prepareStatement("insert into author_shared_posts(post_id, shared_author_name)"+
                     "values (?, ?);");
             stmt.setInt(1, pid);
             stmt.setString(2, AccountHandler.getUser());
             stmt.executeUpdate();
-            System.out.println("Share successfully!");
-            System.out.println("-------------------");
+            System.out.println("Share successfully:");
+            postFeedback(pid);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("Share failed, please try again.");
+            System.err.println("You have already shared this post!");
             System.out.println("-------------------------------");
         }
     }
@@ -171,21 +214,21 @@ public class ActionHandler {
         System.out.println("Please input the post ID you favorite:");
         int pid = readNum();
         if (!postIsIn(pid)) {
-            System.out.println("loader.Post not found, please input a valid post ID.");
+            System.out.println("Post not found, please input a valid post ID.");
             System.out.println("---------------------------------------------");
             return;
         }
         try {
-            stmt = con.prepareStatement("insert into post_favorites(post_id, favorite_author_name)" +
+            stmt = con.prepareStatement("insert into post_favorites(post_id, favorite_author_name)"+
                     "values (?, ?);");
             stmt.setInt(1, pid);
             stmt.setString(2, AccountHandler.getUser());
             stmt.executeUpdate();
             System.out.println("Favorite successfully!");
-            System.out.println("----------------------");
+            postFeedback(pid);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("Favorite failed, please try again.");
+            System.err.println("You have already favorite this post!");
             System.out.println("----------------------------------");
         }
 
@@ -195,21 +238,21 @@ public class ActionHandler {
         System.out.println("Please input the post ID you like:");
         int pid = readNum();
         if (!postIsIn(pid)) {
-            System.out.println("loader.Post not found, please input a valid post ID.");
+            System.out.println("Post not found, please input a valid post ID.");
             System.out.println("---------------------------------------------");
             return;
         }
         try {
-            stmt = con.prepareStatement("insert into author_liked_posts(post_id, liked_author_name)" +
+            stmt = con.prepareStatement("insert into author_liked_posts(post_id, liked_author_name)"+
                     "values (?, ?);");
             stmt.setInt(1, pid);
             stmt.setString(2, AccountHandler.getUser());
             stmt.executeUpdate();
             System.out.println("Like successfully!");
-            System.out.println("------------------");
+            postFeedback(pid);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            System.err.println("Like failed, please try again.");
+            System.err.println("You have already liked this post!");
             System.out.println("------------------------------");
         }
     }
@@ -258,8 +301,8 @@ public class ActionHandler {
 
     public void close() {
         try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            if (rs!=null) rs.close();
+            if (stmt!=null) stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

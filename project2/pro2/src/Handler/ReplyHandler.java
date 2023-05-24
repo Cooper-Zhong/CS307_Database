@@ -45,7 +45,6 @@ public class ReplyHandler {
         }
     }
 
-
     private void replyReply(boolean isAnonymous) {
         System.out.println("Please enter the first_id you want to reply:");
         System.out.println("--------------------------------------------");

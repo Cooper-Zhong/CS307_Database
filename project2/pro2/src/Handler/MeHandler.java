@@ -31,9 +31,9 @@ public class MeHandler {
 
     public void handleMe() {
         System.out.println("Operation: to show: ");
-        System.out.println("[1]liked posts\t[2]favorite posts\t[3]shared posts");
+        System.out.println("[1]liked\t[2]favorite\t[3]shared");
         System.out.println("[4]following list\t[5]my posts\t[6]my replies");
-        System.out.println("[7]my blocking list\t");
+        System.out.println("[7]blocking list\t");
         System.out.println("----------------------------------------------------------------------------");
         // current operation code
         int opcode = readNum();

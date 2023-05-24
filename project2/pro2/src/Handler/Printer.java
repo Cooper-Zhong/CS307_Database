@@ -19,8 +19,7 @@ public class Printer {
                     int cur_post_id = rs.getInt("post_id");
                     if (cur_post_id != post_id) {// new post
                         post_id = outPost(rs, cur_post_id);
-                        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------");
-                        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------");
+                        System.out.println("==========================================================================================================================================");
                     }//then print first reply
                     first_id = outFirst(rs, first_id);
                     //then print second reply
@@ -39,8 +38,7 @@ public class Printer {
                         System.out.println("[ second content ]: " + rs.getString("second_content"));
                         System.out.println("[ second author ]: " + rs.getString("second_author"));
                         System.out.println("[ second stars ]: " + rs.getInt("second_stars"));
-                        System.out.println("----------------------------------------");
-                        System.out.println("----------------------------------------");
+                        System.out.println("========================================");
                     }
                 } while (rs.next());
             } else {
@@ -62,7 +60,7 @@ public class Printer {
                     int cur_post_id = rs.getInt("post_id");
                     if (cur_post_id != post_id) {// new post
                         post_id = outPost(rs, cur_post_id);
-                        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------------");
+                        System.out.println("======================================================================================================================");
                     }//then print first reply
                     first_id = outFirst(rs, first_id);
 
@@ -78,6 +76,24 @@ public class Printer {
         }
     }
 
+    public void printPost(ResultSet rs) throws SQLException {
+        if (rs.next()) {// if there is result
+            rs.first();// roll back to the first one
+            int post_id = 0;
+            do {
+                int cur_post_id = rs.getInt("post_id");
+                if (cur_post_id != post_id) {// new post
+                    post_id = outPost(rs, cur_post_id);
+                    System.out.println("========================================================================================================================================");
+                }
+
+            } while (rs.next());
+        } else {
+            System.out.println("No post are found.");
+            System.out.println("-------------------------------------------------------------------");
+        }
+    }
+
     /**
      * print first reply to console
      */
@@ -89,8 +105,7 @@ public class Printer {
             System.out.println("[ first_stars ]: " + rs.getInt("first_stars"));
             System.out.println("[ first_author ]: " + rs.getString("first_author"));
             System.out.println("[ first_content ]: " + rs.getString("first_content"));
-            System.out.println("--------------------------------------------------------------------------------------");
-            System.out.println("--------------------------------------------------------------------------------------");
+            System.out.println("======================================================================================");
         }
         return first_id;
     }
@@ -108,24 +123,5 @@ public class Printer {
         System.out.println("[ Post time ]: " + rs.getTimestamp("post_time"));
         System.out.println("[ Post city ]: " + rs.getString("post_city"));
         return post_id;
-    }
-
-    public void printPost(ResultSet rs) throws SQLException {
-        if (rs.next()) {// if there is result
-            rs.first();// roll back to the first one
-            int post_id = 0;
-            do {
-                int cur_post_id = rs.getInt("post_id");
-                if (cur_post_id != post_id) {// new post
-                    post_id = outPost(rs, cur_post_id);
-                    System.out.println("----------------------------------------------------------------------------------------------------------------------");
-                    System.out.println("----------------------------------------------------------------------------------------------------------------------");
-                }
-
-            } while (rs.next());
-        } else {
-            System.out.println("No post are found.");
-            System.out.println("-------------------------------------------------------------------");
-        }
     }
 }
