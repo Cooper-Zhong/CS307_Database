@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class MeHandler {
+public class MeHandler implements Me{
 
     /**
      * Me handler
@@ -39,25 +39,25 @@ public class MeHandler {
         int opcode = readNum();
         switch (opcode) {
             case 1:
-                showLikedPosts1();
+                showLikedPosts();
                 break;
             case 2:
-                showFavoritePosts2();
+                showFavoritePosts();
                 break;
             case 3:
-                showSharedPosts3();
+                showSharedPosts();
                 break;
             case 4:
-                showFollowingList4();
+                showFollowingList();
                 break;
             case 5:
-                showMyPosts5();
+                showMyPosts();
                 break;
             case 6:
-                showMyReplies6();
+                showMyReplies();
                 break;
             case 7:
-                showBlockedUsers7();
+                showBlockedUsers();
                 break;
             default:
                 System.err.println("Invalid, please input a valid number.");
@@ -66,7 +66,7 @@ public class MeHandler {
         }
     }
 
-    private void showBlockedUsers7() {
+    public void showBlockedUsers() {
         try {
             String sql = "select * from show_blocked_list(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -89,7 +89,7 @@ public class MeHandler {
         }
     }
 
-    private void showMyReplies6() {
+    public void showMyReplies() {
         try {
 //            String sql = "select * from posts p join first_replies fr on p.post_id = fr.post_id " +
 //                    "left join second_replies sr on fr.first_id = sr.first_id " +
@@ -107,7 +107,7 @@ public class MeHandler {
         }
     }
 
-    private void showMyPosts5() {
+    public void showMyPosts() {
         try {
             String sql = "select * from show_my_posts(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -122,7 +122,7 @@ public class MeHandler {
         }
     }
 
-    private void showFollowingList4() {
+    public void showFollowingList() {
         try {
             String sql = "select * from show_following_list(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -145,7 +145,7 @@ public class MeHandler {
         }
     }
 
-    private void showSharedPosts3() {
+    public void showSharedPosts() {
         try {
             String sql = "select * from show_shared_posts(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -160,7 +160,7 @@ public class MeHandler {
         }
     }
 
-    private void showFavoritePosts2() {
+    public void showFavoritePosts() {
         try {
             String sql = "select * from show_favorite_posts(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -175,7 +175,7 @@ public class MeHandler {
         }
     }
 
-    private void showLikedPosts1() {
+    public void showLikedPosts() {
         try {
             String sql = "select * from show_liked_posts(?);";
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,

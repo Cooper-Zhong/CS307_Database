@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class AccountHandler {
+public class AccountHandler implements Account {
     /**
      * Account handler
      * 1. login
@@ -61,7 +61,7 @@ public class AccountHandler {
         user = null;
     } // public
 
-    private void login() {
+    public void login() {
         System.out.println("Please input your user name:");
         String name = in.next();
         if (!nameIsIn(name)) {
@@ -77,7 +77,7 @@ public class AccountHandler {
     /**
      * register a new user
      */
-    private void register() {
+    public void register() {
         System.out.println("Please create an user name:");
         String name = in.next();
         if (nameIsIn(name)) {
@@ -114,7 +114,7 @@ public class AccountHandler {
     /**
      * check if the name is in the authors table, return true if is in, false if not
      */
-    private boolean nameIsIn(String name) {
+    public boolean nameIsIn(String name) {
         try {
             stmt = con.prepareStatement("select * from authors where author_name = ?;");
             stmt.setString(1, name);
@@ -125,6 +125,16 @@ public class AccountHandler {
             System.err.println(e.getMessage());
         }
         return false;
+    }
+
+    public void close() {
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println("Close failed");
+            System.err.println(e.getMessage());
+        }
     }
 
     private boolean isNum(String s) {
@@ -140,16 +150,6 @@ public class AccountHandler {
             return -1;
         }
         return Integer.parseInt(s);
-    }
-
-    public void close() {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-        } catch (SQLException e) {
-            System.err.println("Close failed");
-            System.err.println(e.getMessage());
-        }
     }
 
 }

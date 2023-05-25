@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class ActionHandler {
+public class ActionHandler implements Action {
     /**
      * 点赞、收藏、转发、关注、取关、屏蔽
      * 一键三连加关注
@@ -28,7 +28,7 @@ public class ActionHandler {
 
     }
 
-    public void handleQuadrant() {
+    public void handleActions() {
         System.out.println("Operation: post -> [1]like\t\t[2]favorite\t\t[3]share\t[4]一键三连");
         System.out.println("           user -> [5]follow\t[6]unfollow\t\t[7]block\t[8]unblock");
         // current operation code
@@ -67,7 +67,7 @@ public class ActionHandler {
         }
     }
 
-    private void unblockUser() {
+    public void unblockUser() {
         System.out.println("Please input the user you want to unblock:");
         in.nextLine();
         String blockee = in.nextLine();
@@ -86,7 +86,7 @@ public class ActionHandler {
         }
     }
 
-    private void blockUser() {
+    public void blockUser() {
         System.out.println("Please input the user you want to block:");
         in.nextLine();
         String blockee = in.nextLine();
@@ -105,7 +105,7 @@ public class ActionHandler {
         }
     }
 
-    private void followUser() {
+    public void followUser() {
         System.out.println("Please input the user name you want to follow:");
         String name = in.next();
         if (!nameIsIn(name)) {
@@ -128,7 +128,7 @@ public class ActionHandler {
         }
     }
 
-    private void unfollowUser() {
+    public void unfollowUser() {
         System.out.println("Please input the user name you want to unfollow:");
         String name = in.next();
         if (!nameIsIn(name)) {
@@ -150,7 +150,7 @@ public class ActionHandler {
         }
     }
 
-    private void postFeedback(int pid) {
+    public void postFeedback(int pid) {
         String sql = "select * from posts where post_id = ?";
         try {
             stmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -164,7 +164,7 @@ public class ActionHandler {
         }
     }
 
-    private void threeInOne() {
+    public void threeInOne() {
         System.out.println("Please input the post id you want to 三连:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -187,7 +187,7 @@ public class ActionHandler {
         }
     }
 
-    private void sharePost() {
+    public void sharePost() {
         System.out.println("Please input the post ID you share:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -210,7 +210,7 @@ public class ActionHandler {
         }
     }
 
-    private void favoritePost() {
+    public void favoritePost() {
         System.out.println("Please input the post ID you favorite:");
         int pid = readNum();
         if (!postIsIn(pid)) {
@@ -271,7 +271,7 @@ public class ActionHandler {
         return false;
     }
 
-    private boolean nameIsIn(String name) {
+    public boolean nameIsIn(String name) {
         try {
             stmt = con.prepareStatement("select * from authors where author_name = ?;");
             stmt.setString(1, name);
@@ -282,6 +282,15 @@ public class ActionHandler {
             System.err.println(e.getMessage());
         }
         return false;
+    }
+
+    public void close() {
+        try {
+            if (rs!=null) rs.close();
+            if (stmt!=null) stmt.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     private boolean isNum(String s) {
@@ -297,15 +306,6 @@ public class ActionHandler {
             return -1;
         }
         return Integer.parseInt(s);
-    }
-
-    public void close() {
-        try {
-            if (rs!=null) rs.close();
-            if (stmt!=null) stmt.close();
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
     }
 
 }

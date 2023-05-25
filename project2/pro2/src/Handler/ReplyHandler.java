@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class ReplyHandler {
+public class ReplyHandler implements Reply{
     /**
      * Reply handler
      * 1. reply a post
@@ -45,7 +45,7 @@ public class ReplyHandler {
         }
     }
 
-    private void replyReply(boolean isAnonymous) {
+     public void replyReply(boolean isAnonymous) {
         System.out.println("Please enter the first_id you want to reply:");
         System.out.println("--------------------------------------------");
         int first_id = readNum();
@@ -61,10 +61,9 @@ public class ReplyHandler {
             System.err.println("Reply failed, please try again.");
             System.out.println("-------------------------------");
         }
-
     }
 
-    private void replyPost(boolean isAnonymous) {
+     public void replyPost(boolean isAnonymous) {
         System.out.println("Please enter the post_id you want to reply:");
         System.out.println("--------------------------------------------");
         int post_id = readNum();

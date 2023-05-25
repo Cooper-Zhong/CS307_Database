@@ -86,7 +86,7 @@ public class Controller {
                 browseHandler.handleBrowse();
                 break;
             case 2:
-                actionHandler.handleQuadrant();
+                actionHandler.handleActions();
                 break;
             case 3:
                 meHandler.handleMe();

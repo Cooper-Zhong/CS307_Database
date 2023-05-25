@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class BrowseHandler {
+public class BrowseHandler implements Browse {
     /**
      * Browse handler
      * 1. browse posts
@@ -52,7 +52,7 @@ public class BrowseHandler {
     /**
      * called when a user search for a keyword/author/category
      */
-    private void update_hot_search_list(String searchContent) {
+    public void update_hot_search_list(String searchContent) {
         String sql = "select * from update_hot_search_list(?);";
         try {
             stmt = con.prepareStatement(sql);
@@ -262,53 +262,53 @@ public class BrowseHandler {
         return Integer.parseInt(s);
     }
 
-    private void browseFirstReplies() {
-        System.out.println("Please enter the post_id you want to browse:");
-        System.out.println("---------------------------------------------");
-        int post_id = readNum();
-        try {
-            stmt = con.prepareStatement("select * from posts where post_id = ?;",
-                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            stmt.setInt(1, post_id);
-            ResultSet rs = stmt.executeQuery();
-            printer.printPost(rs);
-            System.out.println("The first replies:");
-            stmt = con.prepareStatement("select * from first_replies where post_id = ?;",
-                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            stmt.setInt(1, post_id);
-            rs = stmt.executeQuery();
-            printer.printFirstReply(rs);
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            System.err.println("Search failed, please try again.");
-            System.out.println("--------------------------------");
-        }
-    }
+//    private void browseFirstReplies() {
+//        System.out.println("Please enter the post_id you want to browse:");
+//        System.out.println("---------------------------------------------");
+//        int post_id = readNum();
+//        try {
+//            stmt = con.prepareStatement("select * from posts where post_id = ?;",
+//                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+//            stmt.setInt(1, post_id);
+//            ResultSet rs = stmt.executeQuery();
+//            printer.printPost(rs);
+//            System.out.println("The first replies:");
+//            stmt = con.prepareStatement("select * from first_replies where post_id = ?;",
+//                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+//            stmt.setInt(1, post_id);
+//            rs = stmt.executeQuery();
+//            printer.printFirstReply(rs);
+//        } catch (SQLException e) {
+//            System.err.println(e.getMessage());
+//            System.err.println("Search failed, please try again.");
+//            System.out.println("--------------------------------");
+//        }
+//    }
 
     //browse with post_id
-    private void browseAllReplies() {
-        System.out.println("Please enter the post_id you want to browse:");
-        System.out.println("---------------------------------------------");
-        int post_id = readNum();
-        try {
-            stmt = con.prepareStatement("select * from posts where post_id = ?;", ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-            stmt.setInt(1, post_id);
-            ResultSet rs = stmt.executeQuery();
-            printer.printPost(rs);
-            stmt = con.prepareStatement("select * from first_replies fr left join second_replies sr on fr.first_id = sr.first_id " +
-                    "where fr.post_id = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            //left join to preserve first replies without second replies
-            stmt.setInt(1, post_id);
-            rs = stmt.executeQuery();
-            printer.printSecondReply(rs, false);
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            System.err.println("Search failed, please try again.");
-            System.out.println("--------------------------------");
-        }
-
-    }
+//    private void browseAllReplies() {
+//        System.out.println("Please enter the post_id you want to browse:");
+//        System.out.println("---------------------------------------------");
+//        int post_id = readNum();
+//        try {
+//            stmt = con.prepareStatement("select * from posts where post_id = ?;", ResultSet.TYPE_SCROLL_INSENSITIVE,
+//                    ResultSet.CONCUR_READ_ONLY);
+//            stmt.setInt(1, post_id);
+//            ResultSet rs = stmt.executeQuery();
+//            printer.printPost(rs);
+//            stmt = con.prepareStatement("select * from first_replies fr left join second_replies sr on fr.first_id = sr.first_id " +
+//                    "where fr.post_id = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+//            //left join to preserve first replies without second replies
+//            stmt.setInt(1, post_id);
+//            rs = stmt.executeQuery();
+//            printer.printSecondReply(rs, false);
+//        } catch (SQLException e) {
+//            System.err.println(e.getMessage());
+//            System.err.println("Search failed, please try again.");
+//            System.out.println("--------------------------------");
+//        }
+//
+//    }
 
     public void close() {
         try {
