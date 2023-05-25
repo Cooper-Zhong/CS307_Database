@@ -102,21 +102,21 @@ as
 $$
 begin
     return query
-        select distinct p.post_id,
-                        p.title,
-                        p.content,
-                        p.post_time,
-                        p.post_city,
-                        pc.category_name,
-                        p.author_name,
-                        fr.first_id,
-                        fr.first_content,
-                        fr.first_stars,
-                        fr.first_author,
-                        sr.second_id,
-                        sr.second_content,
-                        sr.second_stars,
-                        sr.second_author
+        select p.post_id,
+               p.title,
+               p.content,
+               p.post_time,
+               p.post_city,
+               pc.category_name,
+               p.author_name,
+               fr.first_id,
+               fr.first_content,
+               fr.first_stars,
+               fr.first_author,
+               sr.second_id,
+               sr.second_content,
+               sr.second_stars,
+               sr.second_author
         from posts p
                  join post_category pc on p.post_id = pc.post_id
                  left join first_replies fr on p.post_id = fr.post_id
@@ -366,7 +366,6 @@ begin
 end;
 $$ language plpgsql;
 
-drop function show_my_replies(text);
 
 select *
 from show_my_replies('cooper');
@@ -421,7 +420,6 @@ begin
 end;
 $$ language plpgsql;
 
-drop function delete_post(integer, text);
 select *
 from post_category
 where post_id > 204;
@@ -481,10 +479,26 @@ $$ language plpgsql;
 
 select is_my_post('hoyin', 206);
 
-select array(select first_id
-             from first_replies fr
-             where fr.post_id = 3
-           );
+--- 一键三连 ---------------------------
+create or replace function three_in_one(pid integer, my_name text) returns void as
+$$
+begin
+    insert into author_liked_posts (post_id, liked_author_name) values (pid, my_name) on duplicate key update nothing;
+    insert into author_shared_posts (post_id, shared_author_name) values (pid, my_name) on duplicate key update nothing;
+    insert into post_favorites (post_id, favorite_author_name) values (pid, my_name) on duplicate key update nothing;
+    -- openGauss grammar
+end;
+$$ language plpgsql;
+
+select three_in_one(206, 'hoyin');
+
+explain analyze
+select *
+from posts
+         join first_replies fr on posts.post_id = fr.post_id
+         join second_replies sr on fr.first_id = sr.first_id where post_time < 2019 and posts.author_name = 'international_welcome';
+
+
 
 
 

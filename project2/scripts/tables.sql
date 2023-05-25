@@ -18,6 +18,10 @@ create table posts
     post_city   text,
     author_name text references authors (author_name) not null
 );
+create index posts_author_name_index
+    on posts (author_name); -- used a lot in where clause
+
+explain analyze select * from posts where author_name = 'coop';
 
 
 -- Table 2: categories (Entity set)
@@ -35,7 +39,7 @@ create table post_category
     primary key (post_id, category_name)
 );
 
--- Table 5: author_follow (Relationship set)
+-- Table 5: author_follow (Relationship set) ----------------------------
 create table author_follow
 (
     author_name   text references authors (author_name) not null,
@@ -43,8 +47,7 @@ create table author_follow
     primary key (author_name, followed_name)
 );
 
-
--- Table 6: author_favorites (Relationship set)
+-- Table 6: author_favorites (Relationship set) ----------------------------
 -- users who favorites this post
 create table post_favorites
 (
@@ -52,25 +55,38 @@ create table post_favorites
     favorite_author_name text references authors (author_name) not null,
     primary key (post_id, favorite_author_name)
 );
+create index post_favorites_post_id_index
+    on post_favorites (favorite_author_name); -- used a lot in where clause
 
--- Table 7: author_shared_posts (Relationship set)
+explain analyze select * from post_favorites where favorite_author_name = 'international_welcome';
+
+-- Table 7: author_shared_posts (Relationship set) ----------------------------
 create table author_shared_posts
 (
     post_id            INTEGER references posts (post_id)    not null,
     shared_author_name text references authors (author_name) not null,
     primary key (post_id, shared_author_name)
 );
+create index author_shared_posts_post_id_index
+    on author_shared_posts (shared_author_name); -- used a lot in where clause
 
--- Table 8: author_liked_posts (Relationship set)
+explain analyze select * from author_shared_posts where shared_author_name = 'international_welcome';
+
+
+-- Table 8: author_liked_posts (Relationship set) ----------------------------
 create table author_liked_posts
 (
     post_id           INTEGER references posts (post_id)    not null,
     liked_author_name text references authors (author_name) not null,
     primary key (post_id, liked_author_name)
 );
+-- index
+create index author_liked_posts_post_id_index
+    on author_liked_posts (liked_author_name); -- used a lot in where clause
 
+explain select * from author_liked_posts where liked_author_name = 'international_welcome';
 
--- Table 9: first_replies (Entity set)
+-- Table 9: first_replies (Entity set) ----------------------------
 create table first_replies
 (
     post_id       INTEGER references posts (post_id) on delete cascade not null,
@@ -81,6 +97,12 @@ create table first_replies
     unique (post_id, first_content, first_stars, first_author)
 );
 
+explain analyze
+select *
+from posts
+         join first_replies fr on posts.post_id = fr.post_id
+         join second_replies sr on fr.first_id = sr.first_id where posts.author_name = 'international_welcome';
+
 -- Table 10: sub_replies (Entity set)
 create table second_replies
 (
@@ -90,6 +112,9 @@ create table second_replies
     second_stars   INTEGER,
     second_author  text references authors (author_name)                         not null
 );
+create index second_replies_first_id_index
+    on second_replies (first_id);
+
 ---------------------------- New Tables ----------------------------
 
 -- Table 11: block_user (Relationship set)
